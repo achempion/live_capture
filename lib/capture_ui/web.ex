@@ -1,7 +1,7 @@
 defmodule CaptureUI.Web do
   def live_view do
     quote do
-      use Phoenix.LiveView, layout: {CaptureUI.Layout, :root}
+      use Phoenix.LiveView
     end
   end
 
