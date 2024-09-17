@@ -1,5 +1,5 @@
 defmodule CaptureUI.Main.ShowLive do
-  use Phoenix.LiveView
+  use CaptureUI.Web, :live_view
 
   def mounted(_, _, socket) do
     {:ok, socket}
