@@ -28,7 +28,8 @@ defmodule CaptureUI.MixProject do
       {:plug_cowboy, "~> 2.0", only: :dev},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:jason, "~> 1.0", only: :dev},
-      {:esbuild, "~> 0.8", only: :dev}
+      {:esbuild, "~> 0.8", only: :dev},
+      {:tailwind, "~> 0.2", only: :dev},
     ]
   end
 

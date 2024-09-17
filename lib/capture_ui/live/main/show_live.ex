@@ -6,6 +6,8 @@ defmodule CaptureUI.Main.ShowLive do
   end
 
   def render(assigns) do
-    ~H"Hello world"
+    ~H"""
+    <div class="text-zinc-800 bg-[red]">Hi test</div>
+    """
   end
 end

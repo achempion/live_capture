@@ -16,7 +16,8 @@ Application.put_env(:capture_ui, DemoWeb.Endpoint,
   check_origin: false,
   pubsub_server: Demo.PubSub,
   watchers: [
-    esbuild: {Esbuild, :install_and_run, [:capture_ui, ~w(--watch)]}
+    esbuild: {Esbuild, :install_and_run, [:capture_ui, ~w(--watch)]},
+    tailwind: {Tailwind, :install_and_run, [:capture_ui, ~w(--watch)]}
   ],
   live_reload: [
     patterns: [
