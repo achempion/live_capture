@@ -78,4 +78,3 @@ Task.async(fn ->
   {:ok, _} = Supervisor.start_link(children, strategy: :one_for_one)
   Process.sleep(:infinity)
 end)
-|> Task.await(:infinity)
