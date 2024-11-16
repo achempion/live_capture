@@ -27,8 +27,9 @@ defmodule CaptureUI.Router do
         pipe_through :capture_ui_browser
 
         live_session :capture_ui do
-          live("/", CaptureUI.Main.ShowLive)
+          live("/", CaptureUI.Component.ShowLive)
           live("/components/:module/:function", CaptureUI.Component.ShowLive)
+          live("/raw/components/:module/:function", CaptureUI.RawComponent.ShowLive)
         end
 
         pipe_through :capture_ui_static

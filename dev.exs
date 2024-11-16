@@ -21,9 +21,8 @@ Application.put_env(:capture_ui, DemoWeb.Endpoint,
   ],
   live_reload: [
     patterns: [
-      ~r"dist/.*(js|css|png|jpeg|jpg|gif|svg)$",
-      ~r"lib/capture_ui/live_capture/(live|views)/.*(ex)$",
-      ~r"lib/capture_ui/live_capture/templates/.*(ex)$"
+      ~r"priv/static/*/.*(js|css|png|jpeg|jpg|gif|svg)$",
+      ~r"lib/capture_ui/(live|views)/.*(ex)$"
     ]
   ]
 )

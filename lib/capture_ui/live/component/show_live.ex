@@ -1,18 +1,85 @@
+defmodule CaptureUI.Example do
+  use Phoenix.Component
+  use CaptureUI.Component
+
+  capture()
+
+  def hello(assigns) do
+    ~H"""
+    <p>Hello world!</p>
+    """
+  end
+
+  attr :title, :string
+  capture()
+
+  def hello2(assigns) do
+    ~H"""
+    <p>Hello world2!</p>
+    """
+  end
+end
+
 defmodule CaptureUI.Component.ShowLive do
   use CaptureUI.Web, :live_view
+  alias CaptureUI.Component.Components
 
-  def mount(params, _, socket) do
-    module = CaptureUI.Component.list() |> Enum.find(&(to_string(&1) == params["module"]))
+  def mount(_, _, socket) do
+    modules = CaptureUI.Component.list()
+
+    {:ok, assign(socket, modules: modules, component: nil)}
+  end
+
+  def handle_params(%{"module" => module, "function" => function}, _, socket) do
+    module =
+      Enum.find(
+        socket.assigns.modules,
+        &(to_string(&1) == module)
+      )
 
     function =
-      module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == params["function"]))
+      module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == function))
 
-    {:ok, assign(socket, module: module, function: function, attrs: [])}
+    phoenix_component = module.__components__[function] || %{}
+
+    {:noreply,
+     assign(socket,
+       component: %{module: module, function: function, attrs: phoenix_component[:attrs]}
+     )}
   end
+
+  def handle_params(_, _, socket), do: {:noreply, socket}
 
   def render(assigns) do
     ~H"""
-    <%= apply(@module, @function, [@attrs]) %>
+    <div class="flex min-h-svh">
+      <div class="w-96 border-r">
+        <div class="text-xl">Components</div>
+        <div :for={module <- @modules}>
+          <%= module %>
+          <.link
+            :for={{capture, _} <- module.__captures__}
+            navigate={"/components/#{module}/#{capture}"}
+            class="block py-4 hover:bg-slate-200 cursor-pointer"
+          >
+            <%= capture %>
+          </.link>
+        </div>
+      </div>
+      <div class="flex-1 flex flex-col">
+          <div class="flex-1">
+          <iframe
+            :if={@component[:function]}
+            class="h-full w-full"
+            src={"/raw/components/#{@component[:module]}/#{@component[:function]}"}
+          >
+          </iframe>
+        </div>
+        <div :if={@component} class="border-t">
+          <Components.Attribute.list :if={@component[:attrs]} attrs={@component[:attrs]} />
+        </div>
+      </div>
+    </div>
     """
   end
 end

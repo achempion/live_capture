@@ -25,7 +25,7 @@ defmodule CaptureUI.Component do
     end
   end
 
-  def __on_definition__(env, kind, name, args, _guards, body) do
+  def __on_definition__(env, _kind, name, _args, _guards, _body) do
     capture = Module.delete_attribute(env.module, :capture) |> List.first()
 
     if capture do
