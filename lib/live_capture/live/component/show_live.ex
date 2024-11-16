@@ -10,7 +10,7 @@ defmodule LiveCapture.Example do
     """
   end
 
-  attr :title, :string
+  attr :title, :string, examples: ["53"]
   capture()
 
   def hello2(assigns) do
@@ -67,7 +67,7 @@ defmodule LiveCapture.Component.ShowLive do
         </div>
       </div>
       <div class="flex-1 flex flex-col">
-          <div class="flex-1">
+        <div class="flex-1">
           <iframe
             :if={@component[:function]}
             class="h-full w-full"
