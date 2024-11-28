@@ -5,17 +5,19 @@ defmodule LiveCapture.Component.Components.Attribute do
   attr :attrs, :list,
     examples: [
       [
-        %{name: :name, type: :string, opts: [examples: ["Your name"]]},
-        %{name: :name, type: :string, opts: [examples: ["Your name"]]}
+        %{name: :name1, type: :string, opts: [examples: ["Your name"]]},
+        %{name: :name2, type: :string, opts: [examples: ["Your name"]]}
       ]
     ]
+
+  attr :custom_params, :map, examples: [%{}]
 
   capture()
 
   def list(assigns) do
     ~H"""
     <div :for={attr <- @attrs} class="m-4">
-      <.show attr={attr} />
+      <.show attr={attr} custom_param={@custom_params[to_string(attr.name)]} />
     </div>
     """
   end
@@ -25,20 +27,15 @@ defmodule LiveCapture.Component.Components.Attribute do
   capture()
 
   def show(%{attr: %{type: :string}} = assigns) do
-    example = Keyword.get(assigns.attr[:opts] || [], :examples, []) |> List.first()
+    value = Keyword.get(assigns.attr[:opts] || [], :examples, []) |> List.first()
 
-    assigns =
-      if is_nil(example) do
-        assigns
-      else
-        assign(assigns, example: example)
-      end
+    assigns = assign(assigns, value: value)
 
     ~H"""
     <div class="flex gap-4 items-center">
       <div><%= @attr.name %></div>
       <div class="border bg-gray-200 px-3 py-1 rounded-xl"><%= @attr.type %></div>
-      <input class="border py-1 px-2 rounded" value={assigns[:example]} />
+      <input class="border py-1 px-2 rounded" name={@attr.name} value={@value} />
     </div>
     """
   end
@@ -49,9 +46,9 @@ defmodule LiveCapture.Component.Components.Attribute do
     """
   end
 
-  def show(%{attr: %{type: type}} = assigns) do
+  def show(assigns) do
     ~H"""
-    Unsupported type: `<%= inspect(type) %>`
+    Unsupported type: `<%= inspect(@attr[:type]) %>`
     """
   end
 end
