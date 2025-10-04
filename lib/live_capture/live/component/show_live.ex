@@ -2,6 +2,9 @@ defmodule LiveCapture.Component.ShowLive do
   use LiveCapture.Web, :live_view
   alias LiveCapture.Component.Components
 
+  @config Application.get_env(:live_capture, LiveCapture, %{})
+  @breakpoints Keyword.get(@config, :breakpoints, %{})
+
   def mount(_, _, socket) do
     modules =
       LiveCapture.Component.list()
@@ -15,7 +18,14 @@ defmodule LiveCapture.Component.ShowLive do
         |> Enum.join(".")
       end)
 
-    {:ok, assign(socket, modules: modules, component: nil)}
+    {:ok,
+     assign(
+       socket,
+       modules: modules,
+       component: nil,
+       breakpoint_options: Map.keys(@breakpoints) |> Enum.map(&to_string(&1)),
+       frame_configuration: %{"breakpoint" => nil}
+     )}
   end
 
   def handle_params(%{"module" => module, "function" => function}, _, socket) do
@@ -59,10 +69,23 @@ defmodule LiveCapture.Component.ShowLive do
     {:noreply, assign(socket, :component, component)}
   end
 
+  def handle_event("frame_configuration:change", params, socket) do
+    # params[:]
+
+    {:noreply, assign(socket, frame_configuration: params["frame_configuration"])}
+  end
+
+  defp iframe_style(frame_configuration) do
+    breakpoint = frame_configuration["breakpoint"]
+    breakpoint_value = breakpoint && @breakpoints[String.to_existing_atom(breakpoint)]
+
+    breakpoint_value && "width: #{breakpoint_value}"
+  end
+
   def render(assigns) do
     ~H"""
     <div class="flex min-h-svh">
-      <div class="w-96 border-r bg-slate-100">
+      <div class="w-96 bg-slate-100">
         <div class="text-xl text-center my-4">LiveCapture</div>
         <div :for={{group, list} <- @modules} class="mx-4 mb-4">
           <div class="font-semibold text-slate-900 mb-2"><%= group %></div>
@@ -89,12 +112,26 @@ defmodule LiveCapture.Component.ShowLive do
           </div>
         </div>
       </div>
-      <div class="flex-1 flex flex-col">
-        <div class="flex-1">
+      <div class="flex-1 flex flex-col shadow-md">
+        <div class="border-b py-2 px-4 flex">
+          <div class="ml-auto flex flex-col items-center">
+            <div class="text-xs">Breakpoints</div>
+            <.form
+              :let={f}
+              for={to_form(@frame_configuration)}
+              as={:frame_configuration}
+              phx-change="frame_configuration:change"
+            >
+              <Components.Form.options field={f[:breakpoint]} options={@breakpoint_options} />
+            </.form>
+          </div>
+        </div>
+        <div class="flex-1 bg-slate-100 relative overflow-scroll">
           <iframe
             :if={@component[:function]}
-            class="h-full w-full"
+            class="h-full w-full bg-white absolute"
             src={"/raw/components/#{@component[:module]}/#{@component[:function]}?#{Plug.Conn.Query.encode(%{custom_params: @component[:custom_params]})}"}
+            style={iframe_style(@frame_configuration)}
           >
           </iframe>
         </div>
