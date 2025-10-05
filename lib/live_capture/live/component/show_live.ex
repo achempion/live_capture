@@ -24,7 +24,8 @@ defmodule LiveCapture.Component.ShowLive do
        modules: modules,
        component: nil,
        breakpoint_options: Map.keys(@breakpoints) |> Enum.map(&to_string(&1)),
-       frame_configuration: %{"breakpoint" => nil}
+       docs_options: ["Bottom", "Right"],
+       frame_configuration: %{"breakpoint" => nil, "docs" => nil}
      )}
   end
 
@@ -70,9 +71,12 @@ defmodule LiveCapture.Component.ShowLive do
   end
 
   def handle_event("frame_configuration:change", params, socket) do
-    # params[:]
+    configuration =
+      params["frame_configuration"]
+      |> Enum.map(&{elem(&1, 0), (elem(&1, 1) != "" && elem(&1, 1)) || nil})
+      |> Map.new()
 
-    {:noreply, assign(socket, frame_configuration: params["frame_configuration"])}
+    {:noreply, assign(socket, frame_configuration: configuration)}
   end
 
   defp iframe_style(frame_configuration) do
@@ -114,26 +118,43 @@ defmodule LiveCapture.Component.ShowLive do
       </div>
       <div class="flex-1 flex flex-col shadow-md">
         <div class="border-b py-2 px-4 flex">
-          <div class="ml-auto flex flex-col items-center">
-            <div class="text-xs">Breakpoints</div>
-            <.form
-              :let={f}
-              for={to_form(@frame_configuration)}
-              as={:frame_configuration}
-              phx-change="frame_configuration:change"
-            >
-              <Components.Form.options field={f[:breakpoint]} options={@breakpoint_options} />
-            </.form>
-          </div>
-        </div>
-        <div class="flex-1 bg-slate-100 relative overflow-scroll">
-          <iframe
-            :if={@component[:function]}
-            class="h-full w-full bg-white absolute"
-            src={"/raw/components/#{@component[:module]}/#{@component[:function]}?#{Plug.Conn.Query.encode(%{custom_params: @component[:custom_params]})}"}
-            style={iframe_style(@frame_configuration)}
+          <.form
+            :let={f}
+            for={to_form(@frame_configuration)}
+            as={:frame_configuration}
+            phx-change="frame_configuration:change"
+            class="ml-auto flex gap-4"
           >
-          </iframe>
+            <div class="flex flex-col items-center">
+              <div class="text-xs">Docs</div>
+              <Components.Form.options field={f[:docs]} options={@docs_options} />
+            </div>
+
+            <div class="flex flex-col items-center">
+              <div class="text-xs">Breakpoints</div>
+              <Components.Form.options field={f[:breakpoint]} options={@breakpoint_options} />
+            </div>
+          </.form>
+        </div>
+
+        <div class={["flex flex-1", @frame_configuration["docs"] == "Bottom" && "flex-col"]}>
+          <div class="flex flex-1 bg-slate-100 relative overflow-scroll">
+            <iframe
+              :if={@component[:function]}
+              class="h-full w-full bg-white absolute"
+              src={"/raw/components/#{@component[:module]}/#{@component[:function]}?#{Plug.Conn.Query.encode(%{custom_params: @component[:custom_params]})}"}
+              style={iframe_style(@frame_configuration)}
+            >
+            </iframe>
+          </div>
+          <div class={[
+            "min-w-[40%] min-h-[40%]",
+            @frame_configuration["docs"] == "Right" && "border-l",
+            @frame_configuration["docs"] == "Bottom" && "border-t",
+            !@frame_configuration["docs"] && "hidden"
+          ]}>
+            docs
+          </div>
         </div>
         <div :if={@component} class="border-t">
           <form phx-change="change">
