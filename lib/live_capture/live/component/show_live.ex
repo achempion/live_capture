@@ -2,7 +2,7 @@ defmodule LiveCapture.Component.ShowLive do
   use LiveCapture.Web, :live_view
   alias LiveCapture.Component.Components
 
-  @config Application.get_env(:live_capture, LiveCapture, %{})
+  @config Application.get_env(:live_capture, LiveCapture, [])
   @breakpoints Keyword.get(@config, :breakpoints, %{})
 
   def mount(_, _, socket) do
@@ -25,7 +25,7 @@ defmodule LiveCapture.Component.ShowLive do
        component: nil,
        breakpoint_options: Map.keys(@breakpoints) |> Enum.map(&to_string(&1)),
        docs_options: ["Bottom", "Right"],
-       frame_configuration: %{"breakpoint" => nil, "docs" => nil}
+       frame_configuration: %{"breakpoint" => nil, "docs" => "Bottom"}
      )}
   end
 
@@ -148,12 +148,11 @@ defmodule LiveCapture.Component.ShowLive do
             </iframe>
           </div>
           <div class={[
-            "min-w-[40%] min-h-[40%]",
-            @frame_configuration["docs"] == "Right" && "border-l",
-            @frame_configuration["docs"] == "Bottom" && "border-t",
+            @frame_configuration["docs"] == "Right" && "border-l w-[40%]",
+            @frame_configuration["docs"] == "Bottom" && "border-t h-[40%]",
             !@frame_configuration["docs"] && "hidden"
           ]}>
-            docs
+            <.docs component={@component} />
           </div>
         </div>
         <div :if={@component} class="border-t">
@@ -167,6 +166,50 @@ defmodule LiveCapture.Component.ShowLive do
         </div>
       </div>
     </div>
+    """
+  end
+
+  defp docs(%{component: nil} = assigns) do
+    ~H"""
+    """
+  end
+
+  defp docs(assigns) do
+    ~H"""
+    <code class="whitespace-pre">
+      alias <%= @component[:module] %> &lt;<%= @component[:module] %>.<%= @component[:function] %>
+      <.attrs list={@component[:attrs]} /> /&gt;
+    </code>
+    """
+  end
+
+  defp attrs(assigns) do
+    signature =
+      (assigns.list || [])
+      |> Enum.map(fn attr ->
+        case attr do
+          %{name: name, opts: [examples: [example | _]]} ->
+            [
+              name,
+              example
+              |> inspect()
+              |> Code.format_string!()
+              |> Enum.join("")
+              |> String.split("\n")
+              |> Enum.join("\n")
+            ]
+            |> Enum.join("=")
+
+          _ ->
+            ""
+        end
+      end)
+      |> Enum.join("\n")
+
+    assigns = assign(assigns, :signature, signature)
+
+    ~H"""
+    <div class="ml-4"><%= @signature %></div>
     """
   end
 end
