@@ -6,17 +6,7 @@ defmodule LiveCapture.Component.ShowLive do
   @breakpoints Keyword.get(@config, :breakpoints, %{})
 
   def mount(_, _, socket) do
-    modules =
-      LiveCapture.Component.list()
-      |> Enum.group_by(fn module ->
-        to_string(module)
-        |> String.split(".")
-        |> List.pop_at(0)
-        |> elem(1)
-        |> List.pop_at(-1)
-        |> elem(1)
-        |> Enum.join(".")
-      end)
+    modules = LiveCapture.Component.list()
 
     {:ok,
      assign(
@@ -30,11 +20,7 @@ defmodule LiveCapture.Component.ShowLive do
   end
 
   def handle_params(%{"module" => module, "function" => function}, _, socket) do
-    module =
-      Enum.find(
-        socket.assigns.modules |> Map.values() |> List.flatten(),
-        &(to_string(&1) == module)
-      )
+    module = Enum.find(socket.assigns.modules, &(to_string(&1) == module))
 
     if module do
       function =
@@ -90,31 +76,7 @@ defmodule LiveCapture.Component.ShowLive do
     ~H"""
     <div class="flex min-h-svh">
       <div class="w-96 bg-slate-100">
-        <div class="text-xl text-center my-4">LiveCapture</div>
-        <div :for={{group, list} <- @modules} class="mx-4 mb-4">
-          <div class="font-semibold text-slate-900 mb-2"><%= group %></div>
-          <div :for={module <- list} class="ml-4 mb-6">
-            <div class="font-semibold text-slate-900 mb-2">
-              <%= to_string(module) |> String.split(".") |> List.last() %>
-            </div>
-            <ul class="space-y-6 lg:space-y-2 border-l border-slate-300">
-              <li>
-                <.link
-                  :for={{capture, _} <- module.__captures__}
-                  navigate={"/components/#{module}/#{capture}"}
-                  class={[
-                    "-ml-px block pl-4 border-l cursor-pointer mb-b1052",
-                    (module == @component[:module] && capture == @component[:function] &&
-                       "border-slate-700 text-slate-900") ||
-                      "hover:text-slate-900 hover:border-slate-700 border-slate-300 text-slate-700"
-                  ]}
-                >
-                  <%= capture %>
-                </.link>
-              </li>
-            </ul>
-          </div>
-        </div>
+        <.sidebar modules={@modules} component={@component} />
       </div>
       <div class="flex-1 flex flex-col shadow-md">
         <div class="border-b py-2 px-4 flex">
@@ -167,6 +129,43 @@ defmodule LiveCapture.Component.ShowLive do
       </div>
     </div>
     """
+  end
+
+  defp sidebar(assigns) do
+    ~H"""
+    <div>
+      <div class="text-xl text-center my-4">LiveCapture</div>
+      <div class="mx-4 space-y-6">
+        <div :for={module <- @modules} class="space-y-2">
+          <div class="font-semibold text-slate-900">
+            <%= module |> Module.split() |> Enum.join(".") %>
+          </div>
+          <ul class="border-l border-slate-300 space-y-2">
+            <li :for={{capture, _} <- module.__captures__}>
+              <.link
+                navigate={"/components/#{module}/#{capture}"}
+                class={[
+                  "-ml-px block pl-4 border-l cursor-pointer",
+                  (module == @component[:module] && capture == @component[:function] &&
+                     "border-slate-700 text-slate-900") ||
+                    "hover:text-slate-900 hover:border-slate-700 border-slate-300 text-slate-700"
+                ]}
+              >
+                <%= capture %>/<%= attr_count(module, capture) %>
+              </.link>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp attr_count(module, capture) do
+    module.__components__
+    |> Map.get(capture, %{})
+    |> Map.get(:attrs, [])
+    |> length()
   end
 
   defp docs(%{component: nil} = assigns) do
