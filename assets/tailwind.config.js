@@ -13,6 +13,7 @@ module.exports = {
     extend: {
       colors: {
         primary: colors.blue['800'],
+        secondary: colors.slate['500'],
       },
     },
   },

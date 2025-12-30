@@ -20,21 +20,12 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   def show(assigns) do
     ~H"""
-    <div>
-      <.title />
-      <.section
-        :for={module <- @modules}
-        module={module}
-        component={@component}
-        is_selected={@component[:module] == module}
-      />
-    </div>
-    """
-  end
-
-  defp title(assigns) do
-    ~H"""
-    <div class="font-semibold  my-4 px-2"><.link navigate="/">LiveCapture</.link></div>
+    <.section
+      :for={module <- @modules}
+      module={module}
+      component={@component}
+      is_selected={@component[:module] == module}
+    />
     """
   end
 
@@ -44,7 +35,10 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   defp section(assigns) do
     ~H"""
-    <section class={["py-1 px-2 border-l-2 hover:border-primary hover:bg-primary/5", @is_selected && "bg-primary/5 border-primary"]}>
+    <section class={[
+      "py-1 px-2 border-l-2 hover:border-primary hover:bg-primary/5",
+      @is_selected && "bg-primary/5 border-primary"
+    ]}>
       <.module_title module={@module} is_selected={@is_selected} />
       <.functions_list :if={@is_selected} module={@module} component={@component} />
     </section>

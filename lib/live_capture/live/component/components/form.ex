@@ -14,7 +14,7 @@ defmodule LiveCapture.Component.Components.Form do
 
   def options(assigns) do
     ~H"""
-    <div class="inline-flex rounded border overflow-hidden">
+    <div class="inline-flex items-stretch">
       <input
         class="hidden"
         type="radio"
@@ -33,7 +33,10 @@ defmodule LiveCapture.Component.Components.Form do
         />
         <label
           for={input_id(@field.form, @field.field, (@field.value != option && option) || nil)}
-          class="cursor-pointer px-4 py-2 peer-checked:bg-blue-200 peer-checked:hover:bg-blue-200 hover:bg-blue-100 peer-checked:hover:bg-blue-100"
+          class={[
+            "flex uppercase text-xs font-semibold items-center  px-2 py-auto cursor-pointer h-10 border-b-2 hover:border-primary hover:text-primary/80",
+            @field.value == option && "text-primary border-primary" || "border-transparent"
+          ]}
         >
           <%= option %>
         </label>

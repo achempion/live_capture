@@ -3,7 +3,7 @@ defmodule LiveCapture.Component.ShowLive do
   alias LiveCapture.Component.Components
 
   @config Application.get_env(:live_capture, LiveCapture, [])
-  @breakpoints Keyword.get(@config, :breakpoints, %{})
+  @breakpoints Keyword.get(@config, :breakpoints, [])
 
   def mount(_, _, socket) do
     modules = LiveCapture.Component.list()
@@ -13,9 +13,8 @@ defmodule LiveCapture.Component.ShowLive do
        socket,
        modules: modules,
        component: nil,
-       breakpoint_options: Map.keys(@breakpoints) |> Enum.map(&to_string(&1)),
-       docs_options: ["Bottom", "Right"],
-       frame_configuration: %{"breakpoint" => nil, "docs" => "Bottom"}
+       breakpoint_options:  Enum.map(@breakpoints, &to_string(elem(&1, 0))),
+       frame_configuration: %{"breakpoint" => nil}
      )}
   end
 
@@ -74,60 +73,39 @@ defmodule LiveCapture.Component.ShowLive do
 
   def render(assigns) do
     ~H"""
-    <div class="flex min-h-svh">
-      <div class="bg-slate-100">
+    <Components.Layout.show
+      component={@component}
+    >
+      <:sidebar>
         <Components.Sidebar.show modules={@modules} component={@component} />
-      </div>
-      <div class="flex-1 flex flex-col shadow-md">
-        <div class="border-b py-2 px-4 flex">
-          <.form
-            :let={f}
-            for={to_form(@frame_configuration)}
-            as={:frame_configuration}
-            phx-change="frame_configuration:change"
-            class="ml-auto flex gap-4"
-          >
-            <div class="flex flex-col items-center">
-              <div class="text-xs">Docs</div>
-              <Components.Form.options field={f[:docs]} options={@docs_options} />
-            </div>
+      </:sidebar>
 
-            <div class="flex flex-col items-center">
-              <div class="text-xs">Breakpoints</div>
-              <Components.Form.options field={f[:breakpoint]} options={@breakpoint_options} />
-            </div>
-          </.form>
-        </div>
+      <:header>
+        <.form
+          :let={f}
+          for={to_form(@frame_configuration)}
+          as={:frame_configuration}
+          phx-change="frame_configuration:change"
+          class="ml-auto flex gap-4 items-end"
+        >
+          <Components.Form.options field={f[:breakpoint]} options={@breakpoint_options} />
+        </.form>
+      </:header>
 
-        <div class={["flex flex-1", @frame_configuration["docs"] == "Bottom" && "flex-col"]}>
-          <div class="flex flex-1 bg-slate-100 relative overflow-scroll">
-            <iframe
-              :if={@component[:function]}
-              class="h-full w-full bg-white absolute"
-              src={"/raw/components/#{@component[:module]}/#{@component[:function]}?#{Plug.Conn.Query.encode(%{custom_params: @component[:custom_params]})}"}
-              style={iframe_style(@frame_configuration)}
-            >
-            </iframe>
-          </div>
-          <div class={[
-            @frame_configuration["docs"] == "Right" && "border-l w-[40%]",
-            @frame_configuration["docs"] == "Bottom" && "border-t h-[40%]",
-            !@frame_configuration["docs"] && "hidden"
-          ]}>
-            <.docs component={@component} />
-          </div>
-        </div>
-        <div :if={@component} class="border-t">
-          <form phx-change="change">
-            <Components.Attribute.list
-              :if={@component[:attrs]}
-              attrs={@component[:attrs]}
-              custom_params={@component[:custom_params]}
-            />
-          </form>
-        </div>
-      </div>
-    </div>
+      <:render>
+        <iframe
+          :if={@component[:function]}
+          class="h-full w-full bg-white absolute"
+          src={"/raw/components/#{@component[:module]}/#{@component[:function]}?#{Plug.Conn.Query.encode(%{custom_params: @component[:custom_params]})}"}
+          style={iframe_style(@frame_configuration)}
+        >
+        </iframe>
+      </:render>
+
+      <:docs>
+        <.docs component={@component} />
+      </:docs>
+    </Components.Layout.show>
     """
   end
 

@@ -28,7 +28,7 @@ Application.put_env(:live_capture, DemoWeb.Endpoint,
 )
 
 Application.put_env(:live_capture, LiveCapture,
-  breakpoints: %{s: "480px", m: "768px", l: "1279px", xl: "1600px"}
+  breakpoints: [s: "480px", m: "768px", l: "1279px", xl: "1600px"]
 )
 
 defmodule DemoWeb.Router do
