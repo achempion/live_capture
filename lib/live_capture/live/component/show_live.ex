@@ -73,7 +73,7 @@ defmodule LiveCapture.Component.ShowLive do
 
   def render(assigns) do
     ~H"""
-    <Components.Layout.show component={@component}>
+    <Components.Layout.show>
       <:sidebar>
         <Components.Sidebar.show modules={@modules} component={@component} />
       </:sidebar>
@@ -103,6 +103,15 @@ defmodule LiveCapture.Component.ShowLive do
       <:docs>
         <Components.Docs.show :if={@component} component={@component} />
       </:docs>
+
+      <:attributes>
+        <form :if={@component && @component[:attrs]} phx-change="change" class="p-4">
+          <Components.Attribute.list
+            attrs={@component[:attrs]}
+            custom_params={@component[:custom_params]}
+          />
+        </form>
+      </:attributes>
     </Components.Layout.show>
     """
   end

@@ -1,13 +1,10 @@
 defmodule LiveCapture.Component.Components.Layout do
   use Phoenix.Component
 
-  alias LiveCapture.Component.Components
-
-  attr :component, :map, default: nil
-
   slot :sidebar
   slot :header
   slot :docs
+  slot :attributes
   slot :render
 
   def show(assigns) do
@@ -42,13 +39,7 @@ defmodule LiveCapture.Component.Components.Layout do
           <div class="border-l"></div>
 
           <.section title="Attributes">
-            <form phx-change="change" class="p-4">
-              <Components.Attribute.list
-                :if={@component[:attrs]}
-                attrs={@component[:attrs]}
-                custom_params={@component[:custom_params]}
-              />
-            </form>
+            <%= render_slot(@attributes) %>
           </.section>
         </div>
       </div>
