@@ -73,10 +73,10 @@ defmodule LiveCapture.Component.Components.Docs do
       assigns
       |> assign(:function_name, assigns.component[:function] |> to_string())
       |> assign(:attr_list, attr_examples(assigns.component[:attrs]))
-      |> assign(:slots, slot_examples(assigns.component))
+      |> assign(:slot_data, slot_examples(assigns.component))
 
     ~H"""
-    <%= if @attr_list == [] and @slots == [] do %>
+    <%= if @attr_list == [] and @slot_data.named == [] and @slot_data.default == [] do %>
       <div>
         <%= highlight("<", :punctuation) %><%= highlight(@aliased_name, :module) %>.<%= highlight(
           @function_name,
@@ -91,11 +91,14 @@ defmodule LiveCapture.Component.Components.Docs do
         ) %>
       </div>
       <.attrs :if={@attr_list != []} list={@attr_list} />
-      <%= if @slots == [] do %>
+      <%= if @slot_data.named == [] and @slot_data.default == [] do %>
         <div><%= highlight("/>", :punctuation) %></div>
       <% else %>
         <div><%= highlight(">", :punctuation) %></div>
-        <.slot_calls slots={@slots} />
+        <div class="ml-4">
+          <.slot_calls slots={@slot_data.named} />
+          <%= default_slot_content(@slot_data.default) %>
+        </div>
         <div>
           <%= highlight("</", :punctuation) %><%= highlight(@aliased_name, :module) %>.<%= highlight(
             @function_name,
@@ -162,19 +165,29 @@ defmodule LiveCapture.Component.Components.Docs do
   defp slot_examples(component) do
     defs = normalize_slot_defs(component[:slots])
     examples = component[:slot_examples] || %{}
+    {default_examples, examples} = Map.pop(examples, :inner_block, [])
 
-    Enum.map(defs, fn slot_def ->
-      name = slot_def[:name]
-      entry_examples = Map.get(examples, name)
-      attrs = attr_examples(slot_def[:attrs])
+    named =
+      Enum.map(defs, fn slot_def ->
+        name = slot_def[:name]
+        entry_examples = Map.get(examples, name)
+        attrs = attr_examples(slot_def[:attrs])
 
-      entries =
-        slot_entries(entry_examples)
-        |> default_entries(attrs)
-        |> Enum.map(&populate_entry_attrs(&1, attrs))
+        entries =
+          slot_entries(entry_examples)
+          |> default_entries(attrs)
+          |> Enum.map(&populate_entry_attrs(&1, attrs))
 
-      %{name: name, entries: entries}
-    end)
+        %{name: name, entries: entries}
+      end)
+
+    %{
+      named: named,
+      default:
+        default_examples
+        |> slot_entries()
+        |> Enum.reject(&empty_content?/1)
+    }
   end
 
   defp normalize_slot_defs(nil), do: []
@@ -186,10 +199,13 @@ defmodule LiveCapture.Component.Components.Docs do
       spec = if is_map(spec), do: spec, else: %{}
       Map.put_new(spec, :name, name)
     end)
+    |> Enum.reject(&(&1[:name] == :inner_block))
   end
 
   defp normalize_slot_defs(slots) when is_list(slots) do
-    slots |> Enum.map(&Map.put_new(&1, :name, &1[:name]))
+    slots
+    |> Enum.map(&Map.put_new(&1, :name, &1[:name]))
+    |> Enum.reject(&(&1[:name] == :inner_block))
   end
 
   defp normalize_slot_defs(_), do: []
@@ -244,19 +260,17 @@ defmodule LiveCapture.Component.Components.Docs do
 
   defp slot_calls(assigns) do
     ~H"""
-    <div class="ml-4">
-      <%= for slot <- @slots do %>
-        <%= for entry <- slot.entries do %>
-          <div>
-            <%= highlight("  <:#{slot.name}", :punctuation) %><%= slot_attrs(entry.attrs) %><%=
-              highlight(">", :punctuation)
-            %>
-          </div>
-          <%= slot_content(entry.content, 2) %>
-          <div><%= highlight("  </:#{slot.name}>", :punctuation) %></div>
-        <% end %>
+    <%= for slot <- @slots do %>
+      <%= for entry <- slot.entries do %>
+        <div>
+          <%= highlight("  <:#{slot.name}", :punctuation) %><%= slot_attrs(entry.attrs) %><%=
+            highlight(">", :punctuation)
+          %>
+        </div>
+        <%= slot_content(entry.content, 2) %>
+        <div><%= highlight("  </:#{slot.name}>", :punctuation) %></div>
       <% end %>
-    </div>
+    <% end %>
     """
   end
 
@@ -268,6 +282,33 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp slot_content(nil, _indent), do: raw("")
+
+  defp slot_content(content, indent) when is_binary(content) do
+    padding = String.duplicate("&nbsp;", indent)
+    raw(["<div>", padding, Phoenix.HTML.Safe.to_iodata(highlight_token(content, :string)), "</div>"])
+  end
+
+  defp slot_content(content, indent) do
+    content
+    |> value_lines(indent)
+    |> lines_to_html()
+  end
+
+  defp default_slot_content([]), do: raw("")
+
+  defp default_slot_content(entries) do
+    entries
+    |> Enum.reject(&empty_content?/1)
+    |> Enum.map(fn entry -> slot_content(entry.content, 0) end)
+    |> Phoenix.HTML.Safe.to_iodata()
+    |> raw()
+  end
+
+  defp empty_content?(%{content: content}), do: empty_content?(content)
+  defp empty_content?(nil), do: true
+  defp empty_content?([]), do: true
+  defp empty_content?(""), do: true
+  defp empty_content?(_), do: false
 
   defp slot_content(content, indent) when is_binary(content) do
     padding = String.duplicate("&nbsp;", indent)
