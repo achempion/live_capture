@@ -7,13 +7,17 @@ defmodule LiveCapture.Component do
       @on_definition LiveCapture.Component
       @before_compile LiveCapture.Component
 
-      import LiveCapture.Component, only: [capture: 0]
+      import LiveCapture.Component, only: [capture: 0, capture: 1]
     end
   end
 
-  defmacro capture do
+  defmacro capture(attrs \\ []) do
     quote do
-      Module.put_attribute(__MODULE__, :capture, %{})
+      Module.put_attribute(
+        __MODULE__,
+        :capture,
+        LiveCapture.Component.normalize_capture_opts(unquote(attrs))
+      )
     end
   end
 
@@ -43,4 +47,8 @@ defmodule LiveCapture.Component do
     {:ok, list} = :application.get_key(:live_capture, :modules)
     list |> Enum.filter(&(&1.__info__(:functions) |> Keyword.has_key?(:__captures__)))
   end
+
+  def normalize_capture_opts(opts) when is_list(opts), do: Map.new(opts)
+  def normalize_capture_opts(opts) when is_map(opts), do: opts
+  def normalize_capture_opts(_), do: %{}
 end

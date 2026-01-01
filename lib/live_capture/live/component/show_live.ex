@@ -26,10 +26,17 @@ defmodule LiveCapture.Component.ShowLive do
         module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == function))
 
       phoenix_component = module.__components__[function] || %{}
+      capture_meta = module.__captures__ |> Map.get(function, %{})
 
       {:noreply,
        assign(socket,
-         component: %{module: module, function: function, attrs: phoenix_component[:attrs]}
+         component: %{
+           module: module,
+           function: function,
+           attrs: phoenix_component[:attrs],
+           slots: phoenix_component[:slots],
+           slot_examples: capture_meta[:slots]
+         }
        )}
     else
       {:noreply, socket}
