@@ -1,6 +1,7 @@
 defmodule LiveCapture.Component.Components.Docs do
   use Phoenix.Component
   import Phoenix.HTML, only: [raw: 1]
+  alias LiveCapture.Component
 
   @theme %{
     colors: %{
@@ -69,11 +70,14 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp component_call(assigns) do
+    attr_values = example_attrs(assigns.component)
+    slot_entries = example_slots(assigns.component)
+
     assigns =
       assigns
       |> assign(:function_name, assigns.component[:function] |> to_string())
-      |> assign(:attr_list, attr_examples(assigns.component[:attrs]))
-      |> assign(:slot_data, slot_examples(assigns.component))
+      |> assign(:attr_list, attr_examples(assigns.component[:attrs], attr_values))
+      |> assign(:slot_data, slot_examples(assigns.component[:slots], slot_entries))
 
     ~H"""
     <%= if @attr_list == [] and @slot_data.named == [] and @slot_data.default == [] do %>
@@ -137,24 +141,21 @@ defmodule LiveCapture.Component.Components.Docs do
     """
   end
 
-  defp attr_examples(list) do
+  defp example_attrs(component) do
+    Component.attrs(component.module, component.function)
+  end
+
+  defp example_slots(component) do
+    Component.slots(component.module, component.function)
+  end
+
+  defp attr_examples(list, example_values) do
     (list || [])
     |> Enum.flat_map(fn
-      %{name: name, opts: opts} ->
-        opts = opts || []
-
-        cond do
-          Keyword.has_key?(opts, :examples) ->
-            case Keyword.get(opts, :examples, []) do
-              [example | _] -> [{name, example}]
-              _ -> []
-            end
-
-          Keyword.has_key?(opts, :default) ->
-            [{name, Keyword.get(opts, :default)}]
-
-          true ->
-            []
+      %{name: name} ->
+        case Map.fetch(example_values || %{}, name) do
+          {:ok, value} -> [{name, value}]
+          :error -> []
         end
 
       _ ->
@@ -162,33 +163,90 @@ defmodule LiveCapture.Component.Components.Docs do
     end)
   end
 
-  defp slot_examples(component) do
-    defs = normalize_slot_defs(component[:slots])
-    examples = component[:slot_examples] || %{}
-    {default_examples, examples} = Map.pop(examples, :inner_block, [])
+  defp slot_examples(slot_defs, slot_entries) do
+    slot_defs = normalize_slot_defs(slot_defs)
+    slot_entries = slot_entries || %{}
 
     named =
-      Enum.map(defs, fn slot_def ->
-        name = slot_def[:name]
-        entry_examples = Map.get(examples, name)
-        attrs = attr_examples(slot_def[:attrs])
-
+      slot_defs
+      |> Enum.map(fn slot_def ->
         entries =
-          slot_entries(entry_examples)
-          |> default_entries(attrs)
-          |> Enum.map(&populate_entry_attrs(&1, attrs))
+          slot_entries
+          |> Map.get(slot_def.name, [])
+          |> Enum.map(&slot_entry_example(&1, slot_def[:attrs]))
 
-        %{name: name, entries: entries}
+        %{name: slot_def.name, entries: entries}
       end)
+      |> Enum.reject(fn %{entries: entries} -> entries == [] end)
+
+    default_entries =
+      slot_entries
+      |> Map.get(:inner_block, [])
+      |> Enum.map(&slot_entry_example(&1, []))
+      |> Enum.reject(&empty_content?/1)
 
     %{
       named: named,
-      default:
-        default_examples
-        |> slot_entries()
-        |> Enum.reject(&empty_content?/1)
+      default: default_entries
     }
   end
+
+  defp slot_entry_example(entry, attr_defs) do
+    %{
+      attrs: slot_entry_attrs(entry, attr_defs),
+      content:
+        entry
+        |> slot_entry_content()
+        |> normalize_slot_example_content()
+    }
+  end
+
+  defp slot_entry_attrs(entry, attr_defs) do
+    attr_defs = attr_defs || []
+    names = Enum.map(attr_defs, & &1[:name])
+
+    ordered =
+      names
+      |> Enum.flat_map(fn name ->
+        case Map.fetch(entry, name) do
+          {:ok, value} when value != nil -> [{name, value}]
+          _ -> []
+        end
+      end)
+
+    extras =
+      entry
+      |> Map.drop([:__slot__, :inner_block])
+      |> Enum.reject(fn {key, _} -> key in names end)
+      |> Enum.filter(fn {_name, value} -> value != nil end)
+
+    ordered ++ extras
+  end
+
+  defp slot_entry_content(%{inner_block: inner_block} = entry) when is_function(inner_block, 2) do
+    inner_block.(%{}, entry)
+  end
+
+  defp slot_entry_content(%{inner_block: inner_block}) when is_function(inner_block, 1) do
+    inner_block.(%{})
+  end
+
+  defp slot_entry_content(%{inner_block: inner_block}) when is_function(inner_block, 0) do
+    inner_block.()
+  end
+
+  defp slot_entry_content(%{inner_block: inner_block}), do: inner_block
+  defp slot_entry_content(_), do: nil
+
+  defp normalize_slot_example_content(content) when is_list(content) do
+    if Enum.all?(content, &is_binary/1) do
+      Enum.join(content)
+    else
+      content
+    end
+  end
+
+  defp normalize_slot_example_content(content), do: content
 
   defp normalize_slot_defs(nil), do: []
 
@@ -209,54 +267,6 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp normalize_slot_defs(_), do: []
-
-  defp slot_entries(nil), do: []
-
-  defp slot_entries(entries) when is_list(entries) do
-    Enum.map(entries, &normalize_slot_entry/1)
-  end
-
-  defp slot_entries(entry) do
-    [normalize_slot_entry(entry)]
-  end
-
-  defp normalize_slot_entry(%{} = entry) do
-    {content, attrs} =
-      if Map.has_key?(entry, :content) do
-        {Map.get(entry, :content), Map.delete(entry, :content)}
-      else
-        {nil, entry}
-      end
-
-    %{attrs: attrs || %{}, content: content}
-  end
-
-  defp normalize_slot_entry(entry) do
-    %{attrs: %{}, content: entry}
-  end
-
-  defp default_entries([], attrs), do: [%{attrs: %{}, content: default_content(attrs)}]
-  defp default_entries(entries, _attrs), do: entries
-
-  defp default_content(_attrs), do: []
-
-  defp populate_entry_attrs(%{attrs: attr_map} = entry, attr_examples) do
-    attr_map = attr_map || %{}
-
-    attrs_from_entry =
-      attr_map
-      |> Enum.map(fn {name, value} -> {name, value} end)
-
-    attrs_from_examples =
-      attr_examples
-      |> Enum.reject(fn {name, _example} -> Map.has_key?(attr_map, name) end)
-
-    attrs =
-      (attrs_from_entry ++ attrs_from_examples)
-      |> Enum.filter(fn {_name, value} -> value != nil end)
-
-    Map.put(entry, :attrs, attrs)
-  end
 
   defp slot_calls(assigns) do
     ~H"""
