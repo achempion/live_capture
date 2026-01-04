@@ -7,7 +7,7 @@ defmodule LiveCapture.Component do
       @on_definition LiveCapture.Component
       @before_compile LiveCapture.Component
 
-      import LiveCapture.Component, only: [capture: 0, capture: 1]
+      import LiveCapture.Component, only: [capture: 0, capture: 1, capture_all: 0]
     end
   end
 
@@ -21,6 +21,16 @@ defmodule LiveCapture.Component do
     end
   end
 
+  defmacro capture_all() do
+    quote do
+      Module.put_attribute(
+        __MODULE__,
+        :capture_all,
+        true
+      )
+    end
+  end
+
   defmacro __before_compile__(_) do
     quote do
       def __captures__ do
@@ -29,15 +39,19 @@ defmodule LiveCapture.Component do
     end
   end
 
-  def __on_definition__(env, _kind, name, _args, _guards, _body) do
-    capture = Module.delete_attribute(env.module, :capture) |> List.first()
+  def __on_definition__(env, _kind, name, args, _guards, _body) do
+    capture = env.module |> Module.delete_attribute(:capture) |> List.first()
 
-    if capture do
+    capture_all = Module.get_attribute(env.module, :capture_all) && length(args) == 1
+
+    if capture || capture_all do
       quote do
         Module.put_attribute(__MODULE__, :list, MapSet.put(@list, env.module))
       end
 
-      captures = Module.get_attribute(env.module, :__captures__) |> Map.put(name, capture)
+      captures =
+        Module.get_attribute(env.module, :__captures__)
+        |> Map.update(name, capture || %{}, fn value -> Map.merge(value, capture || %{}) end)
 
       Module.put_attribute(env.module, :__captures__, captures)
     end

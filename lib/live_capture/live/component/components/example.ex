@@ -2,7 +2,7 @@ defmodule LiveCapture.Component.Components.Example do
   use Phoenix.Component
   use LiveCapture.Component
 
-  capture()
+  capture_all()
 
   def hello_world(assigns) do
     ~H"""
