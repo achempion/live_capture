@@ -95,23 +95,28 @@ defmodule LiveCapture.Component do
 
     phoenix_component = Map.get(module.__components__, function, %{})
 
-    Enum.reduce(phoenix_component[:attrs] || [], %{}, fn attr, acc ->
-      cond do
-        Map.has_key?(variant_config[:attrs], attr.name) ->
-          Map.put(acc, attr.name, variant_config[:attrs][attr.name])
+    attrs =
+      Enum.reduce(phoenix_component[:attrs] || [], %{}, fn attr, acc ->
+        cond do
+          Map.has_key?(variant_config[:attrs], attr.name) ->
+            Map.put(acc, attr.name, variant_config[:attrs][attr.name])
 
-        true ->
-          case attr do
-            %{name: name, opts: [default: value]} ->
-              Map.put(acc, name, value)
+          true ->
+            case attr do
+              %{name: name, opts: [default: value]} ->
+                Map.put(acc, name, value)
 
-            %{name: name, opts: [examples: [value | _]]} ->
-              Map.put(acc, name, value)
+              %{name: name, opts: [examples: [value | _]]} ->
+                Map.put(acc, name, value)
 
-            _ ->
-              acc
-          end
-      end
+              _ ->
+                acc
+            end
+        end
+      end)
+
+    Enum.reduce(variant_config[:attrs], attrs, fn {key, value}, acc ->
+      Map.put_new(acc, key, value)
     end)
   end
 

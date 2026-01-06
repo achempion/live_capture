@@ -76,7 +76,7 @@ defmodule LiveCapture.Component.Components.Docs do
     assigns =
       assigns
       |> assign(:function_name, assigns.component[:function] |> to_string())
-      |> assign(:attr_list, attr_examples(assigns.component[:attrs], attr_values))
+      |> assign(:attr_list, attr_values)
       |> assign(:slot_data, slot_examples(assigns.component[:slots], slot_entries))
 
     ~H"""
