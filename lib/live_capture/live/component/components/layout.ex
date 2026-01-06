@@ -31,7 +31,7 @@ defmodule LiveCapture.Component.Components.Layout do
           <%= render_slot(@render) %>
         </div>
 
-        <div class="border-t flex max-h-[40%]">
+        <div class="border-t flex max-h-[40svh]">
           <.section title="Docs">
             <%= render_slot(@docs) %>
           </.section>
