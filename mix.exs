@@ -22,7 +22,7 @@ defmodule LiveCapture.MixProject do
 
   defp deps do
     [
-      {:phoenix_live_view, "~> 0.19 or ~> 1.0"},
+      {:phoenix_live_view, "~> 1.0"},
 
       # Dev
       {:plug_cowboy, "~> 2.0", only: :dev},
