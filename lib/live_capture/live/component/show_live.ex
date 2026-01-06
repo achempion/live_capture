@@ -2,8 +2,7 @@ defmodule LiveCapture.Component.ShowLive do
   use LiveCapture.Web, :live_view
   alias LiveCapture.Component.Components
 
-  @config Application.get_env(:live_capture, LiveCapture, [])
-  @breakpoints Keyword.get(@config, :breakpoints, [])
+  @breakpoints Application.get_env(:live_capture, :breakpoints, [])
 
   def mount(_, _, socket) do
     modules = LiveCapture.Component.list()
