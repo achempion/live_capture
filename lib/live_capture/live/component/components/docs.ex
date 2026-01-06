@@ -65,7 +65,7 @@ defmodule LiveCapture.Component.Components.Docs do
 
   defp alias_line(assigns) do
     ~H"""
-    <div><%= highlight("alias ", :keyword) %><%= highlight(@module_name, :module) %></div>
+    <div>{highlight("alias ", :keyword)}{highlight(@module_name, :module)}</div>
     """
   end
 
@@ -82,32 +82,32 @@ defmodule LiveCapture.Component.Components.Docs do
     ~H"""
     <%= if @attr_list == [] and @slot_data.named == [] and @slot_data.default == [] do %>
       <div>
-        <%= highlight("<", :punctuation) %><%= highlight(@aliased_name, :module) %>.<%= highlight(
+        {highlight("<", :punctuation)}{highlight(@aliased_name, :module)}.{highlight(
           @function_name,
           :function
-        ) %><%= highlight(" />", :punctuation) %>
+        )}{highlight(" />", :punctuation)}
       </div>
     <% else %>
       <div>
-        <%= highlight("<", :punctuation) %><%= highlight(@aliased_name, :module) %>.<%= highlight(
+        {highlight("<", :punctuation)}{highlight(@aliased_name, :module)}.{highlight(
           @function_name,
           :function
-        ) %>
+        )}
       </div>
       <.attrs :if={@attr_list != []} list={@attr_list} />
       <%= if @slot_data.named == [] and @slot_data.default == [] do %>
-        <div><%= highlight("/>", :punctuation) %></div>
+        <div>{highlight("/>", :punctuation)}</div>
       <% else %>
-        <div><%= highlight(">", :punctuation) %></div>
+        <div>{highlight(">", :punctuation)}</div>
         <div class="ml-4">
           <.slot_calls slots={@slot_data.named} />
-          <%= default_slot_content(@slot_data.default) %>
+          {default_slot_content(@slot_data.default)}
         </div>
         <div>
-          <%= highlight("</", :punctuation) %><%= highlight(@aliased_name, :module) %>.<%= highlight(
+          {highlight("</", :punctuation)}{highlight(@aliased_name, :module)}.{highlight(
             @function_name,
             :function
-          ) %><%= highlight(">", :punctuation) %>
+          )}{highlight(">", :punctuation)}
         </div>
       <% end %>
     <% end %>
@@ -122,18 +122,16 @@ defmodule LiveCapture.Component.Components.Docs do
       <%= for {name, example} <- @attrs do %>
         <%= if multiline_value?(example) do %>
           <div>
-            <%= highlight(name, :attr_name) %><%= highlight("=", :operator) %><%= highlight(
+            {highlight(name, :attr_name)}{highlight("=", :operator)}<%= highlight(
               "{",
               :punctuation
             ) %>
           </div>
-          <%= render_value_lines(example, 2) %>
+          {render_value_lines(example, 2)}
           <div><%= highlight("}", :punctuation) %></div>
         <% else %>
           <div>
-            <%= highlight(name, :attr_name) %><%= highlight("=", :operator) %><%= render_inline(
-              example
-            ) %>
+            {highlight(name, :attr_name)}{highlight("=", :operator)}{render_inline(example)}
           </div>
         <% end %>
       <% end %>
@@ -273,13 +271,13 @@ defmodule LiveCapture.Component.Components.Docs do
     <%= for slot <- @slots do %>
       <%= for entry <- slot.entries do %>
         <div>
-          <%= highlight("  <:#{slot.name}", :punctuation) %><%= slot_attrs(entry.attrs) %><%= highlight(
+          {highlight("  <:#{slot.name}", :punctuation)}{slot_attrs(entry.attrs)}{highlight(
             ">",
             :punctuation
-          ) %>
+          )}
         </div>
-        <%= slot_content(entry.content, 2) %>
-        <div><%= highlight("  </:#{slot.name}>", :punctuation) %></div>
+        {slot_content(entry.content, 2)}
+        <div>{highlight("  </:#{slot.name}>", :punctuation)}</div>
       <% end %>
     <% end %>
     """
@@ -353,7 +351,7 @@ defmodule LiveCapture.Component.Components.Docs do
     assigns = %{text: to_string(text), classes: category_classes(category)}
 
     ~H"""
-    <span class={@classes}><%= @text %></span>
+    <span class={@classes}>{@text}</span>
     """
   end
 
@@ -456,6 +454,8 @@ defmodule LiveCapture.Component.Components.Docs do
     inner = render_pairs(fields, indent + 2)
     close = {indent, [highlight_token("}", :punctuation)]}
 
+    IO.inspect([module, [open | inner] ++ [close], indent])
+
     collapsible_struct(module, [open | inner] ++ [close], indent)
   end
 
@@ -509,6 +509,12 @@ defmodule LiveCapture.Component.Components.Docs do
     lines = value_lines(value, indent)
 
     case lines do
+      [{:collapsible, _child_indent, _prefix_tokens, label_tokens, inner_lines}] ->
+        prefix_tokens = key_tokens(key) ++ [highlight_token(": ", :operator)]
+
+        [{:collapsible, indent, prefix_tokens, label_tokens, inner_lines}]
+        |> append_suffix(suffix)
+
       [{_child_indent, parts} | rest] ->
         new_first =
           {indent,
@@ -542,8 +548,9 @@ defmodule LiveCapture.Component.Components.Docs do
     raw(iodata)
   end
 
-  defp line_to_html({:collapsible, indent, label_tokens, inner_lines}) do
-    render_collapsible(label_tokens, indent, inner_lines)
+  defp line_to_html({:collapsible, indent, prefix_tokens, label_tokens, inner_lines}) do
+    adjusted_inner = prepend_prefix_to_inner_lines(inner_lines, prefix_tokens, indent)
+    render_collapsible(prefix_tokens, label_tokens, indent, adjusted_inner)
   end
 
   defp line_to_html({indent, parts}) do
@@ -562,9 +569,31 @@ defmodule LiveCapture.Component.Components.Docs do
 
   defp append_suffix([], _suffix), do: []
 
+  defp append_suffix([{:collapsible, indent, prefix_tokens, label_tokens, inner_lines}], suffix) do
+    [
+      {:collapsible, indent, prefix_tokens, label_tokens ++ [suffix],
+       append_suffix(inner_lines, suffix)}
+    ]
+  end
+
   defp append_suffix(lines, suffix) do
     {indent, parts} = List.last(lines)
     List.replace_at(lines, -1, {indent, parts ++ [suffix]})
+  end
+
+  defp prepend_prefix_to_inner_lines(inner_lines, [], _indent), do: inner_lines
+  defp prepend_prefix_to_inner_lines([], _prefix_tokens, _indent), do: []
+
+  defp prepend_prefix_to_inner_lines(
+         [{:collapsible, _child_indent, _, _, _} | _] = lines,
+         _prefix_tokens,
+         _indent
+       ) do
+    lines
+  end
+
+  defp prepend_prefix_to_inner_lines([{line_indent, parts} | rest], prefix_tokens, _indent) do
+    [{line_indent, prefix_tokens ++ parts} | rest]
   end
 
   defp inline_list?(list) do
@@ -607,20 +636,21 @@ defmodule LiveCapture.Component.Components.Docs do
     ["docs-syntax", tone]
   end
 
-  defp collapsible(label_tokens, lines, indent) do
-    [{:collapsible, indent, label_tokens, lines}]
+  defp collapsible(label_tokens, lines, indent, prefix_tokens \\ []) do
+    [{:collapsible, indent, prefix_tokens, label_tokens, lines}]
   end
 
-  defp render_collapsible(label_tokens, indent, inner_lines) do
+  defp render_collapsible(prefix_tokens, label_tokens, indent, inner_lines) do
     base_id = "docs-collapsible-#{System.unique_integer([:positive])}"
+    container_id = base_id <> "-container"
     label_id = base_id <> "-label"
     content_id = base_id <> "-content"
 
     toggle =
       "document.getElementById('#{content_id}').classList.remove('hidden');" <>
-        "document.getElementById('#{label_id}').classList.add('hidden');"
+        "document.getElementById('#{container_id}').classList.add('hidden');"
 
-    margin_left =
+    margin_left_attr =
       if indent > 0 do
         [" style=\"margin-left: ", Integer.to_string(indent), "ch\""]
       else
@@ -628,10 +658,15 @@ defmodule LiveCapture.Component.Components.Docs do
       end
 
     [
-      "<div><span id=\"",
+      "<div id=\"",
+      container_id,
+      "\"",
+      margin_left_attr,
+      ">",
+      Phoenix.HTML.Safe.to_iodata(prefix_tokens),
+      "<span id=\"",
       label_id,
       "\" class=\"inline-block cursor-pointer rounded bg-slate-100 px-1 text-[11px] leading-5\"",
-      margin_left,
       " onclick=\"",
       toggle,
       "\">",
