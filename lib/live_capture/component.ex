@@ -65,7 +65,11 @@ defmodule LiveCapture.Component do
       end
     end)
     |> Enum.uniq()
-    |> Enum.filter(&(&1.__info__(:functions) |> Keyword.has_key?(:__captures__)))
+    |> Enum.filter(fn module ->
+      has_captures = module.__info__(:functions) |> Keyword.has_key?(:__captures__)
+
+      has_captures && Enum.any?(module.__captures__)
+    end)
   end
 
   def attrs(module, function, variant \\ nil) do
