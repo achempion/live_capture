@@ -31,12 +31,12 @@ defmodule LiveCapture.Component.Components.Layout do
           <%= render_slot(@render) %>
         </div>
 
-        <div class="border-t flex">
+        <div class="border-t flex max-h-[40%]">
           <.section title="Docs">
             <%= render_slot(@docs) %>
           </.section>
 
-          <div :if={false} class="border-l"></div>
+          <div class="border-l"></div>
 
           <.section :if={false} title="Attributes">
             <%= render_slot(@attributes) %>
@@ -49,7 +49,7 @@ defmodule LiveCapture.Component.Components.Layout do
 
   defp section(assigns) do
     ~H"""
-    <div class="flex-1 px-2 pt-2 pb-4 max-w-[50%] overflow-scroll">
+    <div class="flex-1 px-2 pt-2 pb-4 overflow-scroll">
       <.title title={@title} />
       <%= render_slot(@inner_block) %>
     </div>
