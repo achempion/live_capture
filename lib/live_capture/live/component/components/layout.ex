@@ -9,7 +9,7 @@ defmodule LiveCapture.Component.Components.Layout do
 
   def show(assigns) do
     ~H"""
-    <div class="flex min-h-svh">
+    <div class="flex min-h-svh max-h-svh">
       <div class="bg-slate-100 border-r">
         <div class="h-10 flex items-center">
           <div class="font-semibold px-2">
