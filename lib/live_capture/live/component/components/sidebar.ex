@@ -16,6 +16,8 @@ defmodule LiveCapture.Component.Components.Sidebar do
       }
     ]
 
+  attr :live_capture_path, :string, required: true, examples: ["/"]
+
   capture()
 
   def show(assigns) do
@@ -24,6 +26,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
       :for={module <- @modules}
       module={module}
       component={@component}
+      live_capture_path={@live_capture_path}
       is_selected={@component[:module] == module}
     />
     """
@@ -32,6 +35,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
   attr :module, :any, required: true
   attr :component, :map, required: true
   attr :is_selected, :boolean, required: true
+  attr :live_capture_path, :string, required: true
 
   defp section(assigns = %{is_selected: true}) do
     ~H"""
@@ -40,9 +44,14 @@ defmodule LiveCapture.Component.Components.Sidebar do
       @is_selected && "bg-primary/5 border-primary"
     ]}>
       <div class="text-primary">
-        <%= @module |> to_string() |> String.replace_prefix("Elixir.", "") %>
+        {@module |> to_string() |> String.replace_prefix("Elixir.", "")}
       </div>
-      <.functions_list :if={@is_selected} module={@module} component={@component} />
+      <.functions_list
+        :if={@is_selected}
+        module={@module}
+        component={@component}
+        live_capture_path={@live_capture_path}
+      />
     </section>
     """
   end
@@ -50,16 +59,17 @@ defmodule LiveCapture.Component.Components.Sidebar do
   defp section(assigns = %{is_selected: false}) do
     ~H"""
     <.link
-      navigate={"/components/#{@module}/#{Enum.at(@module.__captures__, 0) |> elem(0)}"}
+      navigate={"#{@live_capture_path}/components/#{@module}/#{Enum.at(@module.__captures__, 0) |> elem(0)}"}
       class="block py-1 pl-2 pr-4 border-l-2 hover:border-primary hover:bg-primary/5 hover:text-primary"
     >
-      <%= @module |> to_string() |> String.replace_prefix("Elixir.", "") %>
+      {@module |> to_string() |> String.replace_prefix("Elixir.", "")}
     </.link>
     """
   end
 
   attr :module, :any, required: true
   attr :component, :map, required: true
+  attr :live_capture_path, :string, required: true
 
   defp functions_list(assigns) do
     ~H"""
@@ -72,6 +82,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
         variants={Keyword.keys(config[:variants] || [])}
         is_selected={capture == @component[:function]}
         selected_variant={@component[:variant]}
+        live_capture_path={@live_capture_path}
       />
     </ul>
     """
@@ -88,13 +99,13 @@ defmodule LiveCapture.Component.Components.Sidebar do
     ~H"""
     <li>
       <div class="block border-l-2 border-primary px-3 cursor-pointer text-primary">
-        <%= @capture %>/<%= @attr_count %>
+        {@capture}/{@attr_count}
       </div>
 
       <ul :if={Enum.any?(@variants)} class="pt-1 pb-2">
         <li :for={variant <- @variants}>
           <.link
-            navigate={"/components/#{@module}/#{@capture}/#{variant}"}
+            navigate={"#{@live_capture_path}/components/#{@module}/#{@capture}/#{variant}"}
             class={[
               "group flex items-center gap-2 px-3 cursor-pointer",
               variant == @selected_variant &&
@@ -110,7 +121,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
             ]}>
               &bull;
             </span>
-            <%= variant %>
+            {variant}
           </.link>
         </li>
       </ul>
@@ -122,10 +133,10 @@ defmodule LiveCapture.Component.Components.Sidebar do
     ~H"""
     <li>
       <.link
-        navigate={"/components/#{@module}/#{@capture}"}
+        navigate={"#{@live_capture_path}/components/#{@module}/#{@capture}"}
         class="block border-l-2 px-3 cursor-pointer hover:text-primary hover:border-primary border-slate-300 text-slate-700"
       >
-        <%= @capture %>/<%= @attr_count %>
+        {@capture}/{@attr_count}
       </.link>
     </li>
     """

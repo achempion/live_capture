@@ -111,9 +111,9 @@ defmodule LiveCapture.Component.ShowLive do
 
     url =
       if assigns.component[:variant] do
-        "/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}/#{assigns.component[:variant]}?#{payload}"
+        "#{assigns.live_capture_path}/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}/#{assigns.component[:variant]}?#{payload}"
       else
-        "/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}?#{payload}"
+        "#{assigns.live_capture_path}/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}?#{payload}"
       end
 
     assigns = assign(assigns, iframe_src: url)
@@ -121,7 +121,11 @@ defmodule LiveCapture.Component.ShowLive do
     ~H"""
     <Components.Layout.show>
       <:sidebar>
-        <Components.Sidebar.show modules={@modules} component={@component} />
+        <Components.Sidebar.show
+          modules={@modules}
+          component={@component}
+          live_capture_path={@live_capture_path}
+        />
       </:sidebar>
 
       <:header>
