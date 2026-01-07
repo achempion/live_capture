@@ -4,29 +4,57 @@ defmodule LiveCapture.Component.Components.Example do
 
   capture_all()
 
-  def hello_world(assigns) do
+  def simple(assigns) do
     ~H"""
-    <p>Hello world!</p>
+    <p>Hello, World!</p>
+    """
+  end
+
+  attr :title, :string, default: "World"
+
+  def with_default(assigns) do
+    ~H"""
+    <p>Hello, {@title}</p>
+    """
+  end
+
+  attr :title, :string, examples: ["World", "Galaxy"]
+
+  def with_example(assigns) do
+    ~H"""
+    <p>Hello, {@title}</p>
+    """
+  end
+
+  attr :title, :string, default: "World"
+
+  capture(attributes: %{title: "Galaxy"})
+
+  def with_capture_attributes(assigns) do
+    ~H"""
+    <p>Hello, {@title}</p>
+    """
+  end
+
+  capture(attributes: %{title: "World"})
+
+  def without_attrs(assigns) do
+    ~H"""
+    <p>Hello, {@title}</p>
     """
   end
 
   attr :title, :string
 
-  capture(
-    variants: [
-      earth: %{attrs: %{title: "Earth"}},
-      moon: %{attrs: %{title: "Moon"}}
-    ]
-  )
+  capture(variants: [main: %{title: "Main"}, secondary: %{title: "Secondary"}])
 
-  def complex(assigns) do
+  def with_capture_variants(assigns) do
     ~H"""
-    <p>Hello {@title}!</p>
+    <p>Hello, {@title}</p>
     """
   end
 
-  attr :title, :string, default: "Cities"
-
+  slot :header
   slot :inner_block, required: true
 
   slot :cities, required: true do
@@ -34,23 +62,20 @@ defmodule LiveCapture.Component.Components.Example do
   end
 
   capture(
-    variants: [
-      main: %{
-        slots: %{
-          inner_block: "This is inner slot content.",
-          cities: [
-            %{name: "Paris", content: "France"},
-            %{name: "Berlin", content: "Germany"}
-          ]
-        }
-      }
-    ]
+    attributes: %{
+      inner_block: "This is inner slot content.",
+      header: %{inner_block: "Cities"},
+      cities: [
+        %{inner_block: "France", name: "Paris"},
+        %{inner_block: "Germany", name: "Berlin"}
+      ]
+    }
   )
 
-  def with_slot(assigns) do
+  def with_slots(assigns) do
     ~H"""
     <div>
-      <h3>{@title}</h3>
+      <h3>{@header}</h3>
 
       <div>
         {render_slot(@inner_block)}

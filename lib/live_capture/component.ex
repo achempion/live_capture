@@ -77,6 +77,35 @@ defmodule LiveCapture.Component do
     end)
   end
 
+  def attributes(module, function, variant \\ nil) do
+    default_attributes =
+      module.__components__
+      |> Map.get(function, %{})
+      |> Map.get(:attrs, [])
+      |> Enum.reduce(%{}, fn attr, acc ->
+        value =
+          case attr do
+            %{opts: [examples: [example | _]]} -> example
+            %{opts: [default: default]} -> default
+            _ -> nil
+          end
+
+        Map.put(acc, attr.name, value)
+      end)
+
+    default_capture_attributes =
+      module.__captures__ |> Map.get(function, %{}) |> Map.get(:attributes, %{})
+
+    variants = module.__captures__ |> Map.get(function, %{}) |> Map.get(:variants, [])
+
+    variant_attributes =
+      Keyword.get_lazy(variants, variant, fn ->
+        variants |> Keyword.values() |> List.first() |> Kernel.||(%{})
+      end)
+
+    default_attributes |> Map.merge(default_capture_attributes) |> Map.merge(variant_attributes)
+  end
+
   def attrs(module, function, variant \\ nil) do
     variants = module.__captures__ |> Map.get(function, %{}) |> Map.get(:variants, [])
 
