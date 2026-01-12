@@ -32,6 +32,9 @@ defmodule LiveCapture.Router do
         plug LiveCapture.Router.Assets
         plug LiveCapture.Router.AssignPath, path: path
 
+        get "/liveview/css-:md5", LiveCapture.LiveViewAssets, :css
+        get "/liveview/js-:md5", LiveCapture.LiveViewAssets, :js
+
         plug Plug.Static,
           at: path,
           from: :live_capture,
