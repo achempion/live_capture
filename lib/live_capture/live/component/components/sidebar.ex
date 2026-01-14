@@ -18,7 +18,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   attr :live_capture_path, :string, required: true, examples: ["/"]
 
-  capture()
+  capture
 
   def show(assigns) do
     ~H"""

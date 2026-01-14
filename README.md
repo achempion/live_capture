@@ -33,7 +33,7 @@ Replace `MyAppWeb.LayoutView` with your LiveView layout module.
 import LiveCapture.Router
 
 scope "/" do
-  live_capture("/live_capture", root_layout: {MyAppWeb.LayoutView, :root})
+  live_capture "/live_capture", root_layout: {MyAppWeb.LayoutView, :root}
 end
 ```
 
@@ -46,7 +46,7 @@ Capture your first component story
 ```elixir
 use LiveCapture.Component
 
-capture()
+capture
 
 def my_component(assigns) do
   ~H"""
@@ -71,7 +71,7 @@ If you have a component defined with default attributes, you can render it "as i
 ```elixir
 attr :name, :string, default: "Main", examples: ["Primary", "Secondary"]
 
-capture()
+capture
 
 def my_component(assigns), do: ~H"My component: {@name}"
 ```
@@ -86,7 +86,7 @@ def my_component(assigns), do: ~H"My component: {@name}"
 ```elixir
 attr :name, :string, required: true
 
-capture(attributes: %{name: "Main"})
+capture attributes: %{name: "Main"}
 
 def my_component(assigns), do: ~H"My component: {@name}"
 ```
@@ -98,10 +98,10 @@ def my_component(assigns), do: ~H"My component: {@name}"
 ```elixir
 attr :name, :string, required: true
 
-capture(variants: [
-  main: %{name: "Main"},
-  secondary: %{name: "Secondary"},
-])
+capture variants: [
+          main: %{name: "Main"},
+          secondary: %{name: "Secondary"},
+        ]
 
 def my_component(assigns), do: ~H"My component: {@name}"
 ```
@@ -116,13 +116,13 @@ slot :rows do
   attr :name, :string
 end
 
-capture(attributes: %{
-  header: "This is header slot",
-  inner_block: "Content of the inner block",
-  rows: [
-    %{inner_block: "Slot content", name: "Attribute content"}
-  ]
-})
+capture attributes: %{
+          header: "This is header slot",
+          inner_block: "Content of the inner block",
+          rows: [
+            %{inner_block: "Slot content", name: "Attribute content"}
+          ]
+        }
 
 def my_component(assigns), do: ~H"..."
 ```
@@ -140,9 +140,9 @@ defmodule MyAppWeb.Profile.ShowLive do
 
   def mount(_, _, socket), do: {:ok, socket}
 
-  capture(attributes: %{
-    current_user: LiveCaptureFactory.build(:current_user)
-  })
+  capture attributes: %{
+            current_user: LiveCaptureFactory.build(:current_user)
+          }
 
   def render(assigns) do
   ~H"""

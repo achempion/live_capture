@@ -2,7 +2,7 @@ defmodule LiveCapture.Component.Components.Example do
   use Phoenix.Component
   use LiveCapture.Component
 
-  capture_all()
+  capture_all
 
   def simple(assigns) do
     ~H"""
@@ -28,7 +28,7 @@ defmodule LiveCapture.Component.Components.Example do
 
   attr :title, :string, default: "World"
 
-  capture(attributes: %{title: "Galaxy"})
+  capture attributes: %{title: "Galaxy"}
 
   def with_capture_attributes(assigns) do
     ~H"""
@@ -36,7 +36,7 @@ defmodule LiveCapture.Component.Components.Example do
     """
   end
 
-  capture(attributes: %{title: "World"})
+  capture attributes: %{title: "World"}
 
   def without_attrs(assigns) do
     ~H"""
@@ -46,7 +46,7 @@ defmodule LiveCapture.Component.Components.Example do
 
   attr :title, :string
 
-  capture(variants: [main: %{title: "Main"}, secondary: %{title: "Secondary"}])
+  capture variants: [main: %{title: "Main"}, secondary: %{title: "Secondary"}]
 
   def with_capture_variants(assigns) do
     ~H"""
@@ -61,16 +61,14 @@ defmodule LiveCapture.Component.Components.Example do
     attr :name, :string, required: true
   end
 
-  capture(
-    attributes: %{
-      inner_block: "This is inner slot content.",
-      header: %{inner_block: "Cities"},
-      cities: [
-        %{inner_block: "France", name: "Paris"},
-        %{inner_block: "Germany", name: "Berlin"}
-      ]
-    }
-  )
+  capture attributes: %{
+            inner_block: "This is inner slot content.",
+            header: %{inner_block: "Cities"},
+            cities: [
+              %{inner_block: "France", name: "Paris"},
+              %{inner_block: "Germany", name: "Berlin"}
+            ]
+          }
 
   def with_slots(assigns) do
     ~H"""
