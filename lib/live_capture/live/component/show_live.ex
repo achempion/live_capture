@@ -5,14 +5,14 @@ defmodule LiveCapture.Component.ShowLive do
   @breakpoints Application.compile_env(:live_capture, :breakpoints, [])
 
   def mount(_, _, socket) do
-    modules = LiveCapture.Component.list()
+    modules = LiveCapture.Component.list(socket.assigns.component_loaders)
 
     {:ok,
      assign(
        socket,
        modules: modules,
        component: nil,
-       breakpoint_options: Enum.map(@breakpoints, &to_string(elem(&1, 0))),
+       breakpoint_options: [],
        frame_configuration: %{"breakpoint" => nil}
      )}
   end
@@ -36,12 +36,17 @@ defmodule LiveCapture.Component.ShowLive do
 
     if module do
       function =
-        module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == function_param))
+        module.__live_capture__()[:captures]
+        |> Map.keys()
+        |> Enum.find(&(to_string(&1) == function_param))
 
-      phoenix_component = module.__components__[function] || %{}
+      phoenix_component = module.__components__()[function] || %{}
 
       variants =
-        module.__captures__ |> Map.get(function, %{}) |> Map.get(:variants, []) |> Keyword.keys()
+        module.__live_capture__()[:captures]
+        |> Map.get(function, %{})
+        |> Map.get(:variants, [])
+        |> Keyword.keys()
 
       selected_variant =
         cond do
@@ -55,8 +60,11 @@ defmodule LiveCapture.Component.ShowLive do
             nil
         end
 
+      breakpoints = module.__live_capture__()[:loader].breakpoints()
+
       {:noreply,
        assign(socket,
+         breakpoint_options: Enum.map(breakpoints, &to_string(elem(&1, 0))),
          component: %{
            module: module,
            function: function,

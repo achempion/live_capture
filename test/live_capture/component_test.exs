@@ -3,6 +3,23 @@ defmodule LiveCapture.ComponentTest do
 
   alias LiveCapture.Component.Components.Example
 
+  test "loader configuration" do
+    assert LiveCapture.LiveCaptureDemo.breakpoints() == [
+             s: "480px",
+             m: "768px",
+             l: "1279px",
+             xl: "1600px"
+           ]
+
+    assert LiveCapture.LiveCaptureDemo.root_layout() == {LiveCapture.Layouts, :root}
+  end
+
+  describe "__live_capture__/0" do
+    test "has loader module" do
+      assert Example.__live_capture__().loader == LiveCapture.LiveCaptureDemo
+    end
+  end
+
   describe "attributes/3" do
     test "without arguments" do
       attributes = %{}

@@ -1,6 +1,6 @@
 defmodule LiveCapture.Component.Components.Attribute do
   use Phoenix.Component
-  use LiveCapture.Component
+  use LiveCapture.LiveCaptureDemo
 
   attr :attrs, :list,
     examples: [
@@ -15,7 +15,7 @@ defmodule LiveCapture.Component.Components.Attribute do
 
   attr :custom_params, :map, examples: [%{}]
 
-  capture
+  capture()
 
   def list(assigns) do
     ~H"""
@@ -28,7 +28,7 @@ defmodule LiveCapture.Component.Components.Attribute do
   attr :attr, :map, examples: [%{name: :name, type: :string}]
   attr :custom_param, :any, default: nil
 
-  capture
+  capture()
 
   def show(%{attr: %{type: :string}} = assigns) do
     assigns = set_value(assigns)

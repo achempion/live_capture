@@ -1,6 +1,6 @@
 defmodule LiveCapture.Component.Components.Form do
   use Phoenix.Component
-  use LiveCapture.Component
+  use LiveCapture.LiveCaptureDemo
 
   import Phoenix.HTML.Form
 
@@ -10,7 +10,7 @@ defmodule LiveCapture.Component.Components.Form do
 
   attr :options, :list, required: true, examples: [["Variant 1", 2, 3]]
 
-  capture
+  capture()
 
   def options(assigns) do
     ~H"""

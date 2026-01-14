@@ -1,8 +1,8 @@
 defmodule LiveCapture.Component.Components.Example do
   use Phoenix.Component
-  use LiveCapture.Component
+  use LiveCapture.LiveCaptureDemo
 
-  capture_all
+  capture_all()
 
   def simple(assigns) do
     ~H"""

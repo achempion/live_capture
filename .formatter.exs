@@ -4,7 +4,6 @@ locals_without_parens = [
   breakpoints: 1,
   root_layout: 1,
   capture: 1,
-  capture_all: 0,
   live_capture: 1,
   live_capture: 2,
   live_capture: 3

@@ -18,11 +18,15 @@ defmodule LiveCapture.RawComponent.ShowLive do
   end
 
   def mount(params, _session, socket) do
-    module = LiveCapture.Component.list() |> Enum.find(&(to_string(&1) == params["module"]))
+    module =
+      LiveCapture.Component.list(socket.assigns.component_loaders)
+      |> Enum.find(&(to_string(&1) == params["module"]))
 
     function =
       module &&
-        module.__captures__ |> Map.keys() |> Enum.find(&(to_string(&1) == params["function"]))
+        module.__live_capture__[:captures]
+        |> Map.keys()
+        |> Enum.find(&(to_string(&1) == params["function"]))
 
     {:ok,
      assign(socket,

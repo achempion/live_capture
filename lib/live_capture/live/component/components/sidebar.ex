@@ -1,6 +1,6 @@
 defmodule LiveCapture.Component.Components.Sidebar do
   use Phoenix.Component
-  use LiveCapture.Component
+  use LiveCapture.LiveCaptureDemo
 
   attr :modules, :list,
     required: true,
@@ -18,7 +18,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   attr :live_capture_path, :string, required: true, examples: ["/"]
 
-  capture
+  capture()
 
   def show(assigns) do
     ~H"""
@@ -59,7 +59,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
   defp section(assigns = %{is_selected: false}) do
     ~H"""
     <.link
-      navigate={"#{@live_capture_path}/components/#{@module}/#{Enum.at(@module.__captures__(), 0) |> elem(0)}"}
+      navigate={"#{@live_capture_path}/components/#{@module}/#{Enum.at(@module.__live_capture__()[:captures], 0) |> elem(0)}"}
       class="block py-1 pl-2 pr-4 border-l-2 hover:border-primary hover:bg-primary/5 hover:text-primary"
     >
       {@module |> to_string() |> String.replace_prefix("Elixir.", "")}
@@ -75,7 +75,7 @@ defmodule LiveCapture.Component.Components.Sidebar do
     ~H"""
     <ul class="ml-4 py-2">
       <.function
-        :for={{capture, config} <- @module.__captures__()}
+        :for={{capture, config} <- @module.__live_capture__()[:captures]}
         module={@module}
         capture={capture}
         attr_count={attr_count(@module, capture)}

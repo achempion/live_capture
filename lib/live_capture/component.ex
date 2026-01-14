@@ -1,13 +1,65 @@
 defmodule LiveCapture.Component do
+  defmodule Config do
+    defmacro __using__(_) do
+      quote do
+        import LiveCapture.Component.Config, only: [breakpoints: 1, root_layout: 1]
+
+        @breakpoints []
+        @root_layout {LiveCapture.Layouts, :root}
+
+        @before_compile LiveCapture.Component.Config
+      end
+    end
+
+    defmacro breakpoints(list) do
+      quote do
+        Module.put_attribute(
+          __MODULE__,
+          :breakpoints,
+          unquote(list)
+        )
+      end
+    end
+
+    defmacro root_layout(layout) do
+      quote do
+        Module.put_attribute(
+          __MODULE__,
+          :root_layout,
+          unquote(layout)
+        )
+      end
+    end
+
+    defmacro __before_compile__(_env) do
+      quote do
+        def breakpoints(), do: @breakpoints
+        def root_layout(), do: @root_layout
+      end
+    end
+  end
+
   defmacro __using__(_) do
     quote do
-      Module.register_attribute(__MODULE__, :capture, accumulate: true)
-      Module.put_attribute(__MODULE__, :__captures__, %{})
+      use LiveCapture.Component.Config
 
-      @on_definition LiveCapture.Component
-      @before_compile LiveCapture.Component
+      defmacro __using__(opts) do
+        loader_module = __MODULE__
 
-      import LiveCapture.Component, only: [capture: 0, capture: 1, capture_all: 0]
+        quote bind_quoted: [loader_module: loader_module] do
+          Module.register_attribute(__MODULE__, :capture, accumulate: true)
+
+          Module.put_attribute(__MODULE__, :__live_capture__, %{
+            captures: %{},
+            loader: loader_module
+          })
+
+          @on_definition LiveCapture.Component
+          @before_compile LiveCapture.Component
+
+          import LiveCapture.Component, only: [capture: 0, capture: 1, capture_all: 0]
+        end
+      end
     end
   end
 
@@ -33,23 +85,29 @@ defmodule LiveCapture.Component do
 
   defmacro __before_compile__(_) do
     quote do
-      def __captures__ do
-        @__captures__
+      def __live_capture__() do
+        @__live_capture__
       end
     end
   end
 
-  def __on_definition__(env, _kind, name, args, _guards, _body) do
-    capture = env.module |> Module.delete_attribute(:capture) |> List.first()
+  def __on_definition__(env, _kind, function_name, args, _guards, _body) do
+    live_capture = Module.get_attribute(env.module, :__live_capture__)
 
+    capture_config = env.module |> Module.delete_attribute(:capture) |> List.first()
     capture_all = Module.get_attribute(env.module, :capture_all) && length(args) == 1
 
-    if capture || capture_all do
+    if capture_config || capture_all do
       captures =
-        Module.get_attribute(env.module, :__captures__)
-        |> Map.update(name, capture || %{}, fn value -> Map.merge(value, capture || %{}) end)
+        live_capture[:captures]
+        |> Map.put_new(function_name, %{})
+        |> Map.update!(function_name, &Map.merge(&1, capture_config || %{}))
 
-      Module.put_attribute(env.module, :__captures__, captures)
+      Module.put_attribute(
+        env.module,
+        :__live_capture__,
+        Map.put(live_capture, :captures, captures)
+      )
     end
   end
 
@@ -94,27 +152,25 @@ defmodule LiveCapture.Component do
     )
   end
 
-  def list do
-    apps = Application.get_env(:live_capture, :apps, [])
-    apps = if Enum.empty?(apps), do: [:live_capture], else: apps
-    include_live_capture? = Enum.member?(apps, :live_capture)
-
-    apps
+  def list(component_loaders) do
+    :application.which_applications()
     |> Enum.flat_map(fn app ->
-      case :application.get_key(app, :modules) do
-        {:ok, modules} -> modules
-        _ -> []
-      end
-    end)
-    |> Enum.reject(fn module ->
-      not include_live_capture? and
-        module |> Atom.to_string() |> String.starts_with?("Elixir.LiveCapture")
-    end)
-    |> Enum.uniq()
-    |> Enum.filter(fn module ->
-      has_captures = module.__info__(:functions) |> Keyword.has_key?(:__captures__)
+      app_modules =
+        case :application.get_key(elem(app, 0), :modules) do
+          {:ok, modules} -> modules
+          _ -> []
+        end
 
-      has_captures && Enum.any?(module.__captures__())
+      if MapSet.disjoint?(MapSet.new(app_modules), MapSet.new(component_loaders)) do
+        []
+      else
+        app_modules
+        |> Enum.filter(fn module ->
+          is_live_capture = module.__info__(:functions) |> Keyword.has_key?(:__live_capture__)
+
+          is_live_capture && module.__live_capture__()[:captures] != %{}
+        end)
+      end
     end)
   end
 
@@ -135,9 +191,10 @@ defmodule LiveCapture.Component do
       end)
 
     default_capture_attributes =
-      module.__captures__() |> Map.get(function, %{}) |> Map.get(:attributes, %{})
+      module.__live_capture__()[:captures] |> Map.get(function, %{}) |> Map.get(:attributes, %{})
 
-    variants = module.__captures__() |> Map.get(function, %{}) |> Map.get(:variants, [])
+    variants =
+      module.__live_capture__()[:captures] |> Map.get(function, %{}) |> Map.get(:variants, [])
 
     variant_attributes =
       Keyword.get_lazy(variants, variant, fn ->

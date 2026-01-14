@@ -17,34 +17,38 @@ Add the `:live_capture` dependency into `mix.exs`.
 {:live_capture, "~> 0.1"}
 ```
 
-Configure responsive breakpoints and source applications in `config.exs`.<br/>
-Replace `:my_app` with an app name from `mix.exs`.
+Define a configuration module.
 
 ```elixir
-config :live_capture,
-  apps: [:my_app],
-  breakpoints: [sm: "640px", md: "768px", lg: "1024px", xl: "1280px", "2xl": "1536px"]
+defmodule MyAppWeb.LiveCapture do
+  use LiveCapture.Component
+
+  breakpoints s: "480px", m: "768px", l: "1279px", xl: "1600px"
+  root_layout {MyAppWeb.LayoutView, :root}
+end
 ```
 
-Mount LiveCapture in `router.ex`.<br/>
-Replace `MyAppWeb.LayoutView` with your LiveView layout module.
+Mount LiveCapture in `router.ex`.
+
+> [!TIP]
+> You can mount multiple configuration modules by passing them as a list instead.
 
 ```elixir
 import LiveCapture.Router
 
 scope "/" do
-  live_capture "/live_capture", root_layout: {MyAppWeb.LayoutView, :root}
+  live_capture "/live_capture", MyAppWeb.LiveCapture
 end
 ```
 
 Capture your first component story
 
 > [!TIP]
-> You can place `use LiveCapture.Component` next to `use Phoenix.Component` in `my_app_web.ex`.
-> This makes the `capture/0`, `capture/1`, and `capture_all()` macros available in all component files.
+> You can place `use MyAppWeb.LiveCapture` next to `use Phoenix.Component` in `my_app_web.ex`.
+> This makes the `capture/0`, `capture/1`, and `capture_all/0` macros available in all component files.
 
 ```elixir
-use LiveCapture.Component
+use MyAppWeb.LiveCapture
 
 capture
 
@@ -59,7 +63,7 @@ Explore the main capture patterns in [example.ex](https://github.com/achempion/l
 
 ## Capture patterns
 
-With `use LiveCapture.Component`, import three macros into your module:
+Calling `use MyAppWeb.LiveCapture` makes three macros available inside your module:
 - `capture/0` to simply capture a component
 - `capture/1` to capture a component with attributes and state variants
 - `capture_all/0` to automatically capture all HEEx components inside the file
@@ -71,7 +75,7 @@ If you have a component defined with default attributes, you can render it "as i
 ```elixir
 attr :name, :string, default: "Main", examples: ["Primary", "Secondary"]
 
-capture
+capture()
 
 def my_component(assigns), do: ~H"My component: {@name}"
 ```
@@ -134,9 +138,9 @@ LiveCapture makes it possible to render live components and capture a visual sna
 ```elixir
 defmodule MyAppWeb.Profile.ShowLive do
   use MyAppWeb, :live_view
-  use LiveCapture.Component
+  use MyAppWeb.LiveCapture
 
-  alias MyApp.LiveCaptureFactory
+  alias MyAppWeb.LiveCaptureFactory
 
   def mount(_, _, socket), do: {:ok, socket}
 
@@ -155,7 +159,7 @@ end
 To declutter the component code, you can move definition of complex or recurring state values inside the factory module
 
 ```elixir
-defmodule MyApp.LiveCaptureFactory do
+defmodule MyAppWeb.LiveCaptureFactory do
   alias MyApp.Users
 
   def build(:current_user) do
@@ -171,7 +175,7 @@ You can define and arrange factory modules in a way that fits best your project 
 defmodule MyAppWeb.LiveCaptureWebFactory do
   alias MyAppWeb.Profile
 
-  alias MyApp.LiveCaptureFactory
+  alias MyAppWeb.LiveCaptureFactory
 
   def build(Profile.ShowLive, :main) do
     %{
