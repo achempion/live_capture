@@ -1,6 +1,6 @@
 # LiveCapture
 
-Increase UI quality of your product by capturing visual states of LiveView components.
+Improve the UI quality of your product by capturing visual states of LiveView components.
 
 ## Features
 
@@ -11,7 +11,7 @@ Increase UI quality of your product by capturing visual states of LiveView compo
 
 ## Quick start
 
-Add the `:live_capture` dependency into `mix.exs`.
+Add the `:live_capture` dependency to `mix.exs`.
 
 ```elixir
 {:live_capture, "~> 0.1"}
@@ -41,7 +41,7 @@ scope "/" do
 end
 ```
 
-Capture your first component story
+Capture your first component story.
 
 > [!TIP]
 > You can place `use MyAppWeb.LiveCapture` next to `use Phoenix.Component` in `my_app_web.ex`.
@@ -50,7 +50,7 @@ Capture your first component story
 ```elixir
 use MyAppWeb.LiveCapture
 
-capture
+capture()
 
 def my_component(assigns) do
   ~H"""
@@ -70,7 +70,7 @@ Calling `use MyAppWeb.LiveCapture` makes three macros available inside your modu
 
 ### Simple capture with `capture/0`
 
-If you have a component defined with default attributes, you can render it "as is" with a `capture/0` call
+If you have a component defined with default attributes, you can render it "as is" with a `capture/0` call.
 
 ```elixir
 attr :name, :string, default: "Main", examples: ["Primary", "Secondary"]
@@ -81,7 +81,7 @@ def my_component(assigns), do: ~H"My component: {@name}"
 ```
 
 > [!TIP]
-> Live capture supports two patterns for default attributes: `:default` and `:examples` (with `:examples` taking priority).
+> LiveCapture supports two patterns for default attributes: `:default` and `:examples` (with `:examples` taking priority).
 
 ### Set attribute values with `capture/1`
 
@@ -156,7 +156,7 @@ defmodule MyAppWeb.Profile.ShowLive do
 end
 ```
 
-To declutter the component code, you can move definition of complex or recurring state values inside the factory module
+To declutter the component code, you can move the definition of complex or recurring state values inside the factory module
 
 ```elixir
 defmodule MyAppWeb.LiveCaptureFactory do
@@ -168,8 +168,8 @@ defmodule MyAppWeb.LiveCaptureFactory do
 end
 ```
 
-It's also possible to move declaration of the whole variant attributes payload insdie the factory.
-You can define and arrange factory modules in a way that fits best your project structure.
+It's also possible to move the declaration of the whole variant attributes payload inside the factory.
+You can define and arrange factory modules in a way that fits your project structure best.
 
 ```elixir
 defmodule MyAppWeb.LiveCaptureWebFactory do

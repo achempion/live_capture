@@ -26,7 +26,7 @@ defmodule LiveCapture.MixProject do
   end
 
   defp description() do
-    "Increase UI quality of your product by capturing visual states of LiveView components."
+    "Improve the UI quality of your product by capturing visual states of LiveView components."
   end
 
   defp package() do
