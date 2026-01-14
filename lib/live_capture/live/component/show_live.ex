@@ -2,8 +2,6 @@ defmodule LiveCapture.Component.ShowLive do
   use LiveCapture.Web, :live_view
   alias LiveCapture.Component.Components
 
-  @breakpoints Application.compile_env(:live_capture, :breakpoints, [])
-
   def mount(_, _, socket) do
     modules = LiveCapture.Component.list(socket.assigns.component_loaders)
 
@@ -64,6 +62,7 @@ defmodule LiveCapture.Component.ShowLive do
 
       {:noreply,
        assign(socket,
+         breakpoints: breakpoints,
          breakpoint_options: Enum.map(breakpoints, &to_string(elem(&1, 0))),
          component: %{
            module: module,
@@ -106,9 +105,9 @@ defmodule LiveCapture.Component.ShowLive do
     {:noreply, assign(socket, frame_configuration: configuration)}
   end
 
-  defp iframe_style(frame_configuration) do
+  defp iframe_style(breakpoints, frame_configuration) do
     breakpoint = frame_configuration["breakpoint"]
-    breakpoint_value = breakpoint && @breakpoints[String.to_existing_atom(breakpoint)]
+    breakpoint_value = breakpoint && breakpoints[String.to_existing_atom(breakpoint)]
 
     breakpoint_value && "width: #{breakpoint_value}"
   end
@@ -152,7 +151,7 @@ defmodule LiveCapture.Component.ShowLive do
           :if={@component[:function]}
           class="h-full w-full bg-white absolute"
           src={@iframe_src}
-          style={iframe_style(@frame_configuration)}
+          style={iframe_style(@breakpoints, @frame_configuration)}
         >
         </iframe>
       </:render>

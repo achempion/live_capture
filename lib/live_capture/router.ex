@@ -60,10 +60,6 @@ defmodule LiveCapture.Router do
 
       pipeline :live_capture_static do
         plug LiveCapture.Router.Assets
-        plug LiveCapture.Router.PutAssetsScope, scope: path
-
-        get "/liveview/css-:md5", LiveCapture.LiveViewAssets, :css
-        get "/liveview/js-:md5", LiveCapture.LiveViewAssets, :js
 
         plug Plug.Static,
           at: path,
@@ -81,6 +77,10 @@ defmodule LiveCapture.Router do
 
       scope path do
         pipe_through :live_capture_browser
+        pipe_through :live_capture_static
+
+        get "/liveview/css-:md5", LiveCapture.LiveViewAssets, :css
+        get "/liveview/js-:md5", LiveCapture.LiveViewAssets, :js
 
         live_session :live_capture,
           on_mount: {LiveCapture.Router.CommonAssigns, {path, component_loaders}},
@@ -97,8 +97,6 @@ defmodule LiveCapture.Router do
           live("/raw/components/:module/:function", LiveCapture.RawComponent.ShowLive)
           live("/raw/components/:module/:function/:variant", LiveCapture.RawComponent.ShowLive)
         end
-
-        pipe_through :live_capture_static
 
         get "/*not_found", LiveCapture.PageController, :not_found
       end
