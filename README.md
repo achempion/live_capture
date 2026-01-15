@@ -72,6 +72,9 @@ Calling `use MyAppWeb.LiveCapture` makes three macros available inside your modu
 
 If you have a component defined with default attributes, you can render it "as is" with a `capture/0` call.
 
+> [!TIP]
+> LiveCapture supports two patterns for default attributes: `:default` and `:examples` (with `:examples` taking priority).
+
 ```elixir
 attr :name, :string, default: "Main", examples: ["Primary", "Secondary"]
 
@@ -79,9 +82,6 @@ capture()
 
 def my_component(assigns), do: ~H"My component: {@name}"
 ```
-
-> [!TIP]
-> LiveCapture supports two patterns for default attributes: `:default` and `:examples` (with `:examples` taking priority).
 
 ### Set attribute values with `capture/1`
 
@@ -112,6 +112,9 @@ def my_component(assigns), do: ~H"My component: {@name}"
 
 ### Components with slots
 
+> [!TIP]
+> All `:inner_block` strings are treated as regular HEEx templates.
+
 ```elixir
 slot :header
 slot :inner_block, required: true
@@ -130,9 +133,6 @@ capture attributes: %{
 
 def my_component(assigns), do: ~H"..."
 ```
-
-> [!TIP]
-> All `:inner_block` strings are treated as regular HEEx templates.
 
 
 ### Large components with a complex state structure
