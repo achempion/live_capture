@@ -91,4 +91,30 @@ defmodule LiveCapture.Component.Components.Example do
     </div>
     """
   end
+
+  attr :title, :string
+
+  slot :simple_heex
+  slot :local_aliases
+
+  capture attributes: %{
+            title: "From Attribute!",
+            simple_heex: "1+2 = {1+2}",
+            local_aliases: """
+            <.simple />
+            <.with_default title={@title} />
+            """
+          }
+
+  def with_heex_slots(assigns) do
+    ~H"""
+    <div>
+      <h2>Simple</h2>
+      {render_slot(@simple_heex)}
+
+      <h2>Local aliases</h2>
+      {render_slot(@local_aliases)}
+    </div>
+    """
+  end
 end

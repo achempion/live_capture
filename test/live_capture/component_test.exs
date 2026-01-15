@@ -116,6 +116,14 @@ defmodule LiveCapture.ComponentTest do
       assert rendered =~ "Paris</strong>: France"
       assert rendered =~ "Berlin</strong>: Germany"
     end
+
+    test "with heex slots" do
+      rendered = component_render(Example, :with_heex_slots)
+
+      assert rendered =~ "1+2 = 3"
+      assert rendered =~ "<p>Hello, World!</p>"
+      assert rendered =~ "<p>Hello, From Attribute!</p>"
+    end
   end
 
   defp component_render(module, function, variant \\ nil) do

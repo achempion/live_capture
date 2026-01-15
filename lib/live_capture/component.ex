@@ -123,26 +123,18 @@ defmodule LiveCapture.Component do
 
     slot_keys = slot_names(module, function)
 
-    normalize_slot = fn slot_key, slot_value ->
-      slot_value
-      |> Map.put(:__slot__, slot_key)
-      |> Map.replace(:inner_block, fn _, _ -> slot_value.inner_block end)
-    end
-
     attributes =
-      Enum.reduce(attributes, %{}, fn {key, value}, acc ->
-        if Enum.member?(slot_keys, key) do
-          slot =
-            cond do
-              is_map(value) -> normalize_slot.(key, value)
-              is_list(value) -> Enum.map(value, &normalize_slot.(key, &1))
-              true -> normalize_slot.(key, %{inner_block: value})
-            end
+      Enum.reduce(slot_keys, attributes, fn key, acc ->
+        value = attributes[key]
 
-          Map.put(acc, key, slot)
-        else
-          Map.put(acc, key, value)
-        end
+        slot =
+          cond do
+            is_map(value) -> normalize_slot(key, value, attributes, module)
+            is_list(value) -> Enum.map(value, &normalize_slot(key, &1, attributes, module))
+            true -> normalize_slot(key, %{inner_block: value}, attributes, module)
+          end
+
+        Map.put(acc, key, slot)
       end)
 
     Phoenix.LiveView.TagEngine.component(
@@ -150,6 +142,20 @@ defmodule LiveCapture.Component do
       attributes,
       {env.module, env.function, env.file, env.line}
     )
+  end
+
+  defp normalize_slot(slot_key, slot_value, attributes, module) do
+    slot_value
+    |> Map.put(:__slot__, slot_key)
+    |> Map.replace(:inner_block, fn _, _ ->
+      if is_binary(slot_value.inner_block) do
+        module
+        |> LiveCapture.LiveRender.as_heex(slot_value.inner_block, attributes)
+        |> Phoenix.HTML.raw()
+      else
+        slot_value.inner_block
+      end
+    end)
   end
 
   def list(component_loaders) do

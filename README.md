@@ -122,7 +122,7 @@ end
 
 capture attributes: %{
           header: "This is header slot",
-          inner_block: "Content of the inner block",
+          inner_block: "Content of the inner block {1+2}",
           rows: [
             %{inner_block: "Slot content", name: "Attribute content"}
           ]
@@ -130,6 +130,10 @@ capture attributes: %{
 
 def my_component(assigns), do: ~H"..."
 ```
+
+> [!TIP]
+> All `:inner_block` strings are treated as regular HEEx templates.
+
 
 ### Large components with a complex state structure
 
