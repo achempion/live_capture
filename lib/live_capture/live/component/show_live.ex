@@ -123,7 +123,7 @@ defmodule LiveCapture.Component.ShowLive do
         "#{assigns.live_capture_path}/raw/components/#{assigns.component[:module]}/#{assigns.component[:function]}?#{payload}"
       end
 
-    iframe_width = iframe_width(assigns.breakpoints, assigns.frame_configuration)
+    iframe_width = iframe_width(assigns[:breakpoints], assigns[:frame_configuration])
     assigns = assign(assigns, iframe_src: url, iframe_width: iframe_width)
 
     ~H"""
