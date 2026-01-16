@@ -11,8 +11,15 @@ defmodule LiveCapture.Plugs.AssetsConfig do
 
   def live_session(conn) do
     style_key = conn.private.csp_nonce_assign_key[:style]
+    script_key = conn.private.csp_nonce_assign_key[:script]
 
-    %{"csp_style_nonce" => style_key && Map.get(conn.assigns, style_key)}
+    style_nonce = style_key && Map.get(conn.assigns, style_key)
+    script_nonce = script_key && Map.get(conn.assigns, script_key)
+
+    %{
+      "csp_style_nonce" => style_nonce,
+      "csp_script_nounce" => script_nonce
+    }
   end
 
   def assets_scope("/"), do: ""

@@ -42,7 +42,8 @@ defmodule LiveCapture.Router do
         pipe_through :raw_browser
 
         live_session :live_capture_raw,
-          on_mount: {Plugs.CommonAssigns, {path, component_loaders}} do
+          on_mount: {Plugs.CommonAssigns, {path, component_loaders}},
+          session: {Plugs.AssetsConfig, :live_session, []} do
           live("/raw/components/:module/:function", LiveCapture.RawComponent.ShowLive)
           live("/raw/components/:module/:function/:variant", LiveCapture.RawComponent.ShowLive)
         end

@@ -13,11 +13,11 @@ defmodule LiveCapture.RawComponent.ShowLive do
 
   def render(assigns) do
     ~H"""
-    {LiveCapture.Component.render(__ENV__, @module, @function, @variant)}
+    {LiveCapture.Component.render(__ENV__, @module, @function, @variant, @conn_assigns)}
     """
   end
 
-  def mount(params, _session, socket) do
+  def mount(params, session, socket) do
     module =
       LiveCapture.Component.list(socket.assigns.component_loaders)
       |> Enum.find(&(to_string(&1) == params["module"]))
@@ -32,7 +32,8 @@ defmodule LiveCapture.RawComponent.ShowLive do
      assign(socket,
        module: module,
        function: function,
-       variant: normalize_variant(params["variant"])
+       variant: normalize_variant(params["variant"]),
+       conn_assigns: conn_assigns_from_session(session)
      )}
   end
 
@@ -47,5 +48,12 @@ defmodule LiveCapture.RawComponent.ShowLive do
     String.to_existing_atom(variant_param)
   rescue
     ArgumentError -> nil
+  end
+
+  defp conn_assigns_from_session(session) do
+    %{
+      csp_style_nonce: session["csp_style_nonce"],
+      csp_script_nounce: session["csp_script_nounce"]
+    }
   end
 end

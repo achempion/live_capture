@@ -1,4 +1,6 @@
 defmodule LiveCapture.Component do
+  alias LiveCapture.Attribute
+
   defmodule Config do
     defmacro __using__(_) do
       quote do
@@ -130,8 +132,11 @@ defmodule LiveCapture.Component do
     |> Enum.map(& &1.name)
   end
 
-  def render(env, module, function, variant \\ nil) do
-    attributes = attributes(module, function, variant)
+  def render(env, module, function, variant \\ nil, conn_assigns \\ %{}) do
+    attributes =
+      module
+      |> attributes(function, variant)
+      |> resolve_conn_assigns(conn_assigns)
 
     slot_keys = slot_names(module, function)
 
@@ -220,5 +225,11 @@ defmodule LiveCapture.Component do
       end)
 
     default_attributes |> Map.merge(default_capture_attributes) |> Map.merge(variant_attributes)
+  end
+
+  defp resolve_conn_assigns(attributes, conn_assigns) do
+    Enum.reduce(attributes, %{}, fn {key, value}, acc ->
+      Map.put(acc, key, Attribute.resolve(value, conn_assigns))
+    end)
   end
 end
