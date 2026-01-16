@@ -586,12 +586,12 @@ defmodule LiveCapture.Component.Components.Docs do
     content_id = base_id <> "-content"
 
     toggle =
-      "document.getElementById('#{content_id}').classList.remove('hidden');" <>
-        "document.getElementById('#{container_id}').classList.add('hidden');"
+      Phoenix.LiveView.JS.show(to: "##{content_id}")
+      |> Phoenix.LiveView.JS.add_class("hidden", to: "##{container_id}")
 
     margin_left_attr =
       if indent > 0 do
-        [" style=\"margin-left: ", Integer.to_string(indent), "ch\""]
+        [" class=\"", margin_left_class(indent), "\""]
       else
         []
       end
@@ -606,8 +606,8 @@ defmodule LiveCapture.Component.Components.Docs do
       "<span id=\"",
       label_id,
       "\" class=\"inline-block cursor-pointer rounded bg-slate-100 px-1 text-[11px] leading-5\"",
-      " onclick=\"",
-      toggle,
+      " phx-click=\"",
+      Phoenix.HTML.Safe.to_iodata(toggle),
       "\">",
       label_tokens |> Enum.map(&Phoenix.HTML.Safe.to_iodata/1),
       "</span>",
@@ -663,4 +663,13 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp color(category), do: Map.get(@theme.colors, category, @theme.colors[:default])
+
+  @indent_classes ~w(ml-0 ml-[2ch] ml-[4ch] ml-[6ch] ml-[8ch] ml-[10ch] ml-[12ch] ml-[14ch] ml-[16ch])
+
+  defp margin_left_class(indent) when indent <= 0, do: "ml-0"
+
+  defp margin_left_class(indent) do
+    step = div(indent, 2)
+    Enum.at(@indent_classes, step, List.last(@indent_classes))
+  end
 end
