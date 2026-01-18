@@ -217,7 +217,7 @@ capture attributes: %{
           script_nonce: LiveCapture.Attribute.with_csp_nonces(&__MODULE__.script_nonce/1)
         }
 
-def my_component(assigns), do: ~H""
+def my_component(assigns), do: ~H"..."
 ```
 
 Update `live_capture/3` with conn assign keys of CSP nonces.
@@ -231,7 +231,7 @@ live_capture "/live_capture",
              }
 ```
 
-### Root Layouts with custom assigns
+### Root Layouts with custom conn assigns
 
 The `plugs` option can configure a list of plugs that will be called during the component render.
 
