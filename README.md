@@ -1,8 +1,12 @@
 # LiveCapture
 
+<img align="right" width="96" height="96"
+     alt="LiveCapture logo"
+     src="images/logo-256.svg">
+
 LiveCapture helps you create high-quality LiveView components faster
 
-[Explore component libraries](https://captures.captureui.com/)
+[Explore component libraries](https://captures.captureui.com/) · [Documentation](https://hexdocs.pm/live_capture/readme.html) · [Hex](https://hex.pm/packages/live_capture)
 
 ## Features
 
