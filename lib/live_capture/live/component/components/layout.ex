@@ -10,14 +10,16 @@ defmodule LiveCapture.Component.Components.Layout do
   def show(assigns) do
     ~H"""
     <div class="flex min-h-svh max-h-svh">
-      <div class="bg-slate-100 border-r">
+      <div class="bg-slate-100 border-r flex flex-col">
         <div class="h-10 flex items-center">
           <div class="font-semibold px-2">
             <.link navigate="/">LiveCapture</.link>
           </div>
         </div>
 
-        {render_slot(@sidebar)}
+        <div class="flex-1 overflow-y-auto">
+          {render_slot(@sidebar)}
+        </div>
       </div>
 
       <div class="flex-1 flex flex-col">
