@@ -4,7 +4,9 @@
      alt="LiveCapture logo"
      src="images/logo-256.svg">
 
-Zero-boilerplate storybook for LiveView components
+Zero-boilerplate storybook for LiveView components.
+
+Document, preview, and test LiveView components in isolation.
 
 [Explore component libraries](https://captures.captureui.com/) · [Documentation](https://hexdocs.pm/live_capture/readme.html) · [Hex](https://hex.pm/packages/live_capture)
 
