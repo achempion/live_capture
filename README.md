@@ -10,6 +10,8 @@ Document, preview, and test LiveView components in isolation.
 
 [Explore component libraries](https://captures.captureui.com/) · [Documentation](https://hexdocs.pm/live_capture/readme.html) · [Hex](https://hex.pm/packages/live_capture)
 
+[Watch the talk from Copenhagen Elixir](https://www.youtube.com/watch?v=P-2jct_Im-A)
+
 ---
 
 Need help with LiveCapture integration or your LiveView project? [Hire me](https://cal.com/achempion/hire)
