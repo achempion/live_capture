@@ -130,7 +130,17 @@ defmodule LiveCapture.Component do
     |> Map.get(function, %{})
     |> Map.get(:slots, [])
     |> Enum.map(& &1.name)
+    |> maybe_implicit_slot_names(module, function)
   end
+
+  defp maybe_implicit_slot_names([], module, function) do
+    for {key, value} <- attributes(module, function),
+        (is_map(value) and is_map_key(value, :inner_block)) or
+          (is_list(value) and match?([%{inner_block: _} | _], value)),
+        do: key
+  end
+
+  defp maybe_implicit_slot_names(list, _, _), do: list
 
   def render(env, module, function, variant \\ nil, conn_assigns \\ %{}) do
     attributes =
