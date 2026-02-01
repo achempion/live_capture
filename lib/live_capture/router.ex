@@ -27,7 +27,7 @@ defmodule LiveCapture.Router do
         plug LiveCapture.Plugs.LoaderPlugs, component_loaders: component_loaders
       end
 
-      scope path do
+      scope path, alias: false do
         pipe_through :live_capture_browser
 
         live_session :live_capture,
