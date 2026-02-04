@@ -48,11 +48,11 @@ defmodule LiveCapture.MixProject do
   defp deps do
     [
       {:phoenix_live_view, "~> 1.0"},
+      {:jason, "~> 1.0"},
 
       # Dev
       {:plug_cowboy, "~> 2.0", only: :dev},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
-      {:jason, "~> 1.0", only: :dev},
       {:esbuild, "~> 0.8", only: :dev},
       {:tailwind, "~> 0.2", only: :dev},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false, warn_if_outdated: true}

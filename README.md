@@ -254,6 +254,10 @@ defmodule MyAppWeb.LiveCapture do
 end
 ```
 
+## Mix Tasks
+
+- `mix help live_capture.gen.schema` to generate components schema
+
 ## License
 
 Copyright (c) 2026 Boris Kuznetsov <me@achempion.com>
