@@ -186,24 +186,18 @@ defmodule LiveCapture.Component do
   end
 
   def list(component_loaders) do
-    :application.which_applications()
-    |> Enum.flat_map(fn app ->
-      app_modules =
-        case :application.get_key(elem(app, 0), :modules) do
-          {:ok, modules} -> modules
-          _ -> []
-        end
-
-      if MapSet.disjoint?(MapSet.new(app_modules), MapSet.new(component_loaders)) do
-        []
-      else
-        app_modules
-        |> Enum.filter(fn module ->
-          is_live_capture = module.__info__(:functions) |> Keyword.has_key?(:__live_capture__)
-
-          is_live_capture && module.__live_capture__()[:captures] != %{}
-        end)
+    component_loaders
+    |> Enum.flat_map(fn loader ->
+      case Application.get_application(loader) do
+        nil -> []
+        app -> Application.spec(app, :modules) || []
       end
+    end)
+    |> Enum.uniq()
+    |> Enum.filter(fn module ->
+      Code.ensure_loaded?(module) &&
+        function_exported?(module, :__live_capture__, 0) &&
+        module.__live_capture__()[:captures] != %{}
     end)
   end
 
