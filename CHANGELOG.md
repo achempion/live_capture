@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.2.7 (2026-02-07)
+
+* Add reproduction example
+* fix loadind only the within the module
 ## v0.2.6 (2026-02-06)
 
 * Simplify fetching modules with components
