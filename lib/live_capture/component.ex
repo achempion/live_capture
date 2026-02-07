@@ -186,6 +186,8 @@ defmodule LiveCapture.Component do
   end
 
   def list(component_loaders) do
+    loader_set = MapSet.new(component_loaders)
+
     component_loaders
     |> Enum.flat_map(fn loader ->
       case Application.get_application(loader) do
@@ -197,7 +199,8 @@ defmodule LiveCapture.Component do
     |> Enum.filter(fn module ->
       Code.ensure_loaded?(module) &&
         function_exported?(module, :__live_capture__, 0) &&
-        module.__live_capture__()[:captures] != %{}
+        module.__live_capture__()[:captures] != %{} &&
+        module.__live_capture__()[:loader] in loader_set
     end)
   end
 
