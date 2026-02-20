@@ -117,4 +117,31 @@ defmodule LiveCapture.Component.Components.Example do
     </div>
     """
   end
+
+  slot :column do
+    attr :label, :string, required: true
+  end
+
+  attr :rows, :list, default: []
+
+  capture attributes: %{
+            rows: [1, 2, 3],
+            column: [
+              %{inner_block: "row {row_number}", label: "Row number", let: :row_number},
+              %{inner_block: "column", label: "Column"},
+            ]
+          }
+
+  def table(assigns) do
+    ~H"""
+    <table>
+      <tr>
+        <th :for={col <- @column}>{col.label}</th>
+      </tr>
+      <tr :for={row <- @rows}>
+        <td :for={col <- @column}>{render_slot(col, row)}</td>
+      </tr>
+    </table>
+    """
+  end
 end

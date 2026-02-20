@@ -171,13 +171,22 @@ defmodule LiveCapture.Component do
     )
   end
 
-  defp normalize_slot(slot_key, slot_value, attributes, module) do
+  defp normalize_slot(slot_key, slot_value, assigns, module) do
     slot_value
     |> Map.put(:__slot__, slot_key)
-    |> Map.replace(:inner_block, fn _, _ ->
+    |> Map.replace(:inner_block, fn _, slot_arg ->
       if is_binary(slot_value.inner_block) do
+        bindings =
+          []
+          |> Keyword.put(:assigns, assigns)
+          |> then(fn bindings ->
+            if is_atom(slot_value[:let]),
+              do: Keyword.put_new(bindings, slot_value[:let], slot_arg),
+              else: bindings
+          end)
+
         module
-        |> LiveCapture.LiveRender.as_heex(slot_value.inner_block, attributes)
+        |> LiveCapture.LiveRender.as_heex(slot_value.inner_block, bindings)
         |> Phoenix.HTML.raw()
       else
         slot_value.inner_block

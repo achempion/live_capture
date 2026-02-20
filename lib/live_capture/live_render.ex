@@ -1,7 +1,7 @@
 defmodule LiveCapture.LiveRender do
   require EEx
 
-  def as_heex(component_module, template, assigns \\ %{}) do
+  def as_heex(component_module, template, bindings \\ [assigns: %{}]) do
     caller = %{__ENV__ | module: component_module}
 
     quoted =
@@ -22,7 +22,7 @@ defmodule LiveCapture.LiveRender do
         macros: [{Kernel, Kernel.__info__(:macros)}]
       })
 
-    {rendered, _, _} = Code.eval_quoted_with_env(quoted, [assigns: assigns], env)
+    {rendered, _, _} = Code.eval_quoted_with_env(quoted, bindings, env)
 
     rendered
     |> Phoenix.HTML.Safe.to_iodata()
