@@ -140,23 +140,63 @@ def my_component(assigns), do: ~H"My component: {@name}"
 > [!TIP]
 > All `:inner_block` strings are treated as regular HEEx templates.
 
+####
+
+Imagine a simple component with default slot attribute
+
 ```elixir
-slot :header
 slot :inner_block, required: true
 
-slot :rows do
-  attr :name, :string
+def with_block(assigns) do
+  ~H"""
+  {render_slot(@inner_block)}
+  """
 end
+```
 
+To capture component with default slot, simply pass the `:inner_block` attribute.
+
+```elixir
 capture attributes: %{
-          header: "This is header slot",
-          inner_block: "Content of the inner block {1+2}",
-          rows: [
-            %{inner_block: "Slot content", name: "Attribute content"}
+          inner_block: "Hello world"
+        }
+```
+
+The table component can be an advanced variant of slots capture because the column renderer will need to access a local `row` variable.
+
+```elixir
+
+  slot :column do
+    attr :label, :string, required: true
+  end
+
+  attr :rows, :list, default: []
+
+  def table(assigns) do
+    ~H"""
+    <table>
+      <tr>
+        <th :for={col <- @column}>{col.label}</th>
+      </tr>
+
+      <tr :for={row <- @rows}>
+        <td :for={col <- @column}>{render_slot(col, row)}</td>
+      </tr>
+    </table>
+    """
+  end
+```
+
+You can use `:let` argument to bind the local variable that can be accessed directly inside the column's inner block template.
+
+```elixir
+capture attributes: %{
+          rows: [1, 2, 3],
+          column: [
+            %{inner_block: "row {row_number}", label: "Row number", let: :row_number},
+            %{inner_block: "column", label: "Column"},
           ]
         }
-
-def my_component(assigns), do: ~H"..."
 ```
 
 
