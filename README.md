@@ -166,25 +166,25 @@ The table component can be an advanced variant of slots capture because the colu
 
 ```elixir
 
-  slot :column do
-    attr :label, :string, required: true
-  end
+slot :column do
+  attr :label, :string, required: true
+end
 
-  attr :rows, :list, default: []
+attr :rows, :list, default: []
 
-  def table(assigns) do
-    ~H"""
-    <table>
-      <tr>
-        <th :for={col <- @column}>{col.label}</th>
-      </tr>
+def table(assigns) do
+  ~H"""
+  <table>
+    <tr>
+      <th :for={col <- @column}>{col.label}</th>
+    </tr>
 
-      <tr :for={row <- @rows}>
-        <td :for={col <- @column}>{render_slot(col, row)}</td>
-      </tr>
-    </table>
-    """
-  end
+    <tr :for={row <- @rows}>
+      <td :for={col <- @column}>{render_slot(col, row)}</td>
+    </tr>
+  </table>
+  """
+end
 ```
 
 You can use `:let` argument to bind the local variable that can be accessed directly inside the column's inner block template.
