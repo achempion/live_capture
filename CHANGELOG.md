@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.2.9 (2026-02-20)
+
+* Recompile assets
+
 ## v0.2.8 (2026-02-20)
 
 * Allow binding local slot variables with :let argument
