@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.2.8 (2026-02-20)
+
+* Allow binding local slot variables with :let argument
+
 ## v0.2.7 (2026-02-07)
 
 * Add reproduction example
