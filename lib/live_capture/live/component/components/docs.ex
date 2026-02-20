@@ -241,10 +241,20 @@ defmodule LiveCapture.Component.Components.Docs do
         " ",
         highlight_token(name, :attr_name),
         highlight_token("=", :operator),
-        render_inline(value)
+        render_slot_attr_value(name, value)
       ]
     end)
   end
+
+  defp render_slot_attr_value(:let, value) when is_atom(value) do
+    raw([
+      Phoenix.HTML.Safe.to_iodata(highlight_token("{", :punctuation)),
+      Phoenix.HTML.Safe.to_iodata(highlight_token(Atom.to_string(value), :value)),
+      Phoenix.HTML.Safe.to_iodata(highlight_token("}", :punctuation))
+    ])
+  end
+
+  defp render_slot_attr_value(_name, value), do: render_inline(value)
 
   defp slot_content(nil, _indent), do: raw("")
 
