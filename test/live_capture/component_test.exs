@@ -77,6 +77,18 @@ defmodule LiveCapture.ComponentTest do
 
       assert LiveCapture.Component.attributes(Example, :with_slots) == attributes
     end
+
+    test "table" do
+      attributes = %{
+        column: [
+          %{label: "Row number", let: :row_number, inner_block: "row {row_number}"},
+          %{label: "Column", inner_block: "column"}
+        ],
+        rows: [1, 2, 3]
+      }
+
+      assert LiveCapture.Component.attributes(Example, :table) == attributes
+    end
   end
 
   describe "render/3" do
@@ -123,6 +135,14 @@ defmodule LiveCapture.ComponentTest do
       assert rendered =~ "1+2 = 3"
       assert rendered =~ "<p>Hello, World!</p>"
       assert rendered =~ "<p>Hello, From Attribute!</p>"
+    end
+
+    test "table" do
+      rendered = component_render(Example, :table)
+
+      assert rendered =~ "row 1"
+      assert rendered =~ "row 2"
+      assert rendered =~ "row 3"
     end
   end
 
