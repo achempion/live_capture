@@ -24,7 +24,7 @@ defmodule LiveCapture.RawComponent.ShowLive do
 
     function =
       module &&
-        module.__live_capture__[:captures]
+        module.__live_capture__()[:captures]
         |> Map.keys()
         |> Enum.find(&(to_string(&1) == params["function"]))
 
