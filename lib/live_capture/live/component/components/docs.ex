@@ -173,7 +173,6 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp slots_present?(%{named: named, default: default}), do: named != [] or default != []
-  defp slots_present?(_), do: false
 
   defp normalize_slot_entries(nil), do: []
 
@@ -330,7 +329,6 @@ defmodule LiveCapture.Component.Components.Docs do
   end
 
   defp multiline_value?(value) when is_map(value) or is_list(value) or is_tuple(value), do: true
-  defp multiline_value?(%_{}), do: true
   defp multiline_value?(_), do: false
 
   defp value_lines(value, indent) when is_binary(value) do

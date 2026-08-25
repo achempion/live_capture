@@ -39,15 +39,11 @@ defmodule LiveCapture.Component.Components.Sidebar do
 
   defp section(assigns = %{is_selected: true}) do
     ~H"""
-    <section class={[
-      "py-1 pl-2 pr-4 border-l-2 ",
-      @is_selected && "bg-primary/5 border-primary"
-    ]}>
+    <section class="py-1 pl-2 pr-4 border-l-2 bg-primary/5 border-primary">
       <div class="text-primary">
         {@module |> to_string() |> String.replace_prefix("Elixir.", "")}
       </div>
       <.functions_list
-        :if={@is_selected}
         module={@module}
         component={@component}
         live_capture_path={@live_capture_path}
