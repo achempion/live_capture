@@ -128,7 +128,7 @@ defmodule LiveCapture.Component.Components.Example do
             rows: [1, 2, 3],
             column: [
               %{inner_block: "row {row_number}", label: "Row number", let: :row_number},
-              %{inner_block: "column", label: "Column"},
+              %{inner_block: "column", label: "Column"}
             ]
           }
 
@@ -142,6 +142,43 @@ defmodule LiveCapture.Component.Components.Example do
         <td :for={col <- @column}>{render_slot(col, row)}</td>
       </tr>
     </table>
+    """
+  end
+
+  attr :kind, :atom, values: [:info, :error]
+
+  slot :inner_block, doc: "the message"
+
+  attr :rest, :global
+
+  capture variants: [
+            info: %{kind: :info, inner_block: "Saved."},
+            error: %{kind: :error, inner_block: "Failed."}
+          ]
+
+  def with_global_attr(assigns) do
+    ~H"""
+    <div {@rest} data-kind={@kind}>{render_slot(@inner_block)}</div>
+    """
+  end
+
+  attr :variant, :string, values: ~w(primary)
+  attr :class, :any
+  slot :inner_block, required: true
+
+  capture variants: [
+            primary: %{variant: "primary", inner_block: "Go"},
+            secondary: %{inner_block: "Back"}
+          ]
+
+  def with_nil_default_attrs(assigns) do
+    assigns =
+      assign_new(assigns, :class, fn ->
+        if assigns[:variant] == "primary", do: "btn-primary", else: "btn-secondary"
+      end)
+
+    ~H"""
+    <button class={@class}>{render_slot(@inner_block)}</button>
     """
   end
 end

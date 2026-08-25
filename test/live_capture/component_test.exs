@@ -89,6 +89,24 @@ defmodule LiveCapture.ComponentTest do
 
       assert LiveCapture.Component.attributes(Example, :table) == attributes
     end
+
+    test "attrs without default or example are omitted" do
+      assert LiveCapture.Component.attributes(Example, :with_global_attr) == %{
+               kind: :info,
+               inner_block: "Saved.",
+               rest: []
+             }
+
+      assert LiveCapture.Component.attributes(Example, :with_global_attr, :error) == %{
+               kind: :error,
+               inner_block: "Failed.",
+               rest: []
+             }
+
+      assert LiveCapture.Component.attributes(Example, :with_nil_default_attrs, :secondary) == %{
+               inner_block: "Back"
+             }
+    end
   end
 
   describe "render/3" do
@@ -143,6 +161,25 @@ defmodule LiveCapture.ComponentTest do
       assert rendered =~ "row 1"
       assert rendered =~ "row 2"
       assert rendered =~ "row 3"
+    end
+
+    test "global attr renders when supplied via capture" do
+      rendered = component_render(Example, :with_global_attr)
+
+      assert rendered =~ ~s(data-kind="info")
+      assert rendered =~ "Saved."
+    end
+
+    test "component falls back to its own defaults for nil attrs" do
+      rendered = component_render(Example, :with_nil_default_attrs)
+
+      assert rendered =~ ~s(class="btn-primary")
+    end
+
+    test "variant without explicit class gets the fallback" do
+      rendered = component_render(Example, :with_nil_default_attrs, :secondary)
+
+      assert rendered =~ ~s(class="btn-secondary")
     end
   end
 

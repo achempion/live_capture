@@ -219,14 +219,12 @@ defmodule LiveCapture.Component do
       |> Map.get(function, %{})
       |> Map.get(:attrs, [])
       |> Enum.reduce(%{}, fn attr, acc ->
-        value =
-          case attr do
-            %{opts: [examples: [example | _]]} -> example
-            %{opts: [default: default]} -> default
-            _ -> nil
-          end
-
-        Map.put(acc, attr.name, value)
+        case attr do
+          %{opts: [examples: [example | _]]} -> Map.put(acc, attr.name, example)
+          %{opts: [default: default]} -> Map.put(acc, attr.name, default)
+          %{type: :global} -> Map.put(acc, attr.name, [])
+          _ -> acc
+        end
       end)
 
     default_capture_attributes =
