@@ -1,16 +1,11 @@
 defmodule LiveCapture.LiveRender do
-  require EEx
-
   def as_heex(component_module, template, bindings \\ [assigns: %{}]) do
     caller = %{__ENV__ | module: component_module}
 
     quoted =
-      EEx.compile_string(template,
-        engine: Phoenix.LiveView.TagEngine,
-        subengine: Phoenix.LiveView.Engine,
+      Phoenix.LiveView.TagEngine.compile(template,
         caller: caller,
         file: "inline_heex",
-        source: template,
         tag_handler: Phoenix.LiveView.HTMLEngine
       )
 
