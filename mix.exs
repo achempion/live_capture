@@ -47,7 +47,7 @@ defmodule LiveCapture.MixProject do
 
   defp deps do
     [
-      {:phoenix_live_view, "~> 1.0"},
+      {:phoenix_live_view, ">= 1.1.21 and < 2.0.0"},
       {:jason, "~> 1.0"},
 
       # Dev
