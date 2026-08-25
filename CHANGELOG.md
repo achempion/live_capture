@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.3.0 (2026-08-25)
+
+* Preserve missing component attributes so `assign_new/3` and Phoenix defaults work correctly (thanks @sylvesterroos)
+* Prefer the first `:examples` value when an attribute defines both `:default` and `:examples`
+* Support Phoenix LiveView 1.2 and require Phoenix LiveView 1.1.21 or later (thanks @sylvesterroos)
+
 ## v0.2.9 (2026-02-20)
 
 * Recompile assets
