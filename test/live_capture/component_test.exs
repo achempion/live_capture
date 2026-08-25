@@ -43,6 +43,12 @@ defmodule LiveCapture.ComponentTest do
       assert LiveCapture.Component.attributes(Example, :with_example) == attributes
     end
 
+    test "with default and examples" do
+      attributes = %{title: "Galaxy"}
+
+      assert LiveCapture.Component.attributes(Example, :with_default_and_examples) == attributes
+    end
+
     test "with capture attributes" do
       attributes = %{title: "Galaxy"}
 

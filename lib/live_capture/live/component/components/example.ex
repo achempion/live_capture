@@ -36,6 +36,14 @@ defmodule LiveCapture.Component.Components.Example do
     """
   end
 
+  attr :title, :string, default: "World", examples: ["Galaxy"]
+
+  def with_default_and_examples(assigns) do
+    ~H"""
+    <p>Hello, {@title}</p>
+    """
+  end
+
   attr :title, :string, default: "World"
 
   capture attributes: %{title: "Galaxy"}

@@ -219,9 +219,9 @@ defmodule LiveCapture.Component do
       |> Map.get(function, %{})
       |> Map.get(:attrs, [])
       |> Enum.reduce(%{}, fn attr, acc ->
-        case attr do
-          %{opts: [examples: [example | _]]} -> Map.put(acc, attr.name, example)
-          %{opts: [default: default]} -> Map.put(acc, attr.name, default)
+        case Map.new(attr.opts) do
+          %{examples: [example | _]} -> Map.put(acc, attr.name, example)
+          %{default: default} -> Map.put(acc, attr.name, default)
           _ -> acc
         end
       end)
