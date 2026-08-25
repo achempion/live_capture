@@ -33,6 +33,10 @@ defmodule LiveCapture.ComponentTest do
       assert LiveCapture.Component.attributes(Example, :with_default) == attributes
     end
 
+    test "with assign_new" do
+      assert LiveCapture.Component.attributes(Example, :with_assign_new) == %{}
+    end
+
     test "with example argument" do
       attributes = %{title: "World"}
 
@@ -98,6 +102,10 @@ defmodule LiveCapture.ComponentTest do
 
     test "with default argument" do
       assert component_render(Example, :with_default) =~ "Hello, World"
+    end
+
+    test "with assign_new" do
+      assert component_render(Example, :with_assign_new) =~ "Hello, World"
     end
 
     test "with example argument" do

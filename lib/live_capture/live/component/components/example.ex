@@ -18,6 +18,16 @@ defmodule LiveCapture.Component.Components.Example do
     """
   end
 
+  attr :title, :string
+
+  def with_assign_new(assigns) do
+    assigns = assign_new(assigns, :title, fn -> "World" end)
+
+    ~H"""
+    <p>Hello, {@title}</p>
+    """
+  end
+
   attr :title, :string, examples: ["World", "Galaxy"]
 
   def with_example(assigns) do
